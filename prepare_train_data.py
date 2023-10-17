@@ -12,7 +12,7 @@ dirname = os.path.dirname(__file__)
 
 import gpt2_composer
 
-DATASET_PATH = os.path.join(dirname, 'DATA\\MIDIS')
+DATASET_PATH = os.path.join(dirname, 'DATA\\beethoven')
 TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
 

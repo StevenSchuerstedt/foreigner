@@ -11,7 +11,14 @@ def extract_4bar_sections(fn_mid):
     note_seq_examples = []
 
     # load sequence
-    seq = note_seq.midi_file_to_note_sequence(fn_mid)
+    
+    try:
+        seq = note_seq.midi_file_to_note_sequence(fn_mid)
+    except note_seq.MIDIConversionError:
+        return note_seq_examples
+
+
+    
 
 
     # split on tempo and time signature changes

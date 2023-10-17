@@ -30,7 +30,7 @@ eval_dataset = tokenized_datasets["test"]
 model = gpt2_composer.create_model("")
 
 # train
-training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=1000, save_steps=1000)
+training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=10000, save_steps=1000)
 trainer = transformers.Trainer(
     model=model, args=training_args, train_dataset=train_dataset, eval_dataset=eval_dataset)
 trainer.train()
