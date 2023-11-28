@@ -12,7 +12,7 @@ dirname = os.path.dirname(__file__)
 
 import gpt2_composer
 
-DATASET_PATH = os.path.join(dirname, 'DATA\\beethoven')
+DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
 TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
 
@@ -32,12 +32,12 @@ txt_files = glob.glob(os.path.join(TOKENS_PATH, "*.txt"))
 txt_files_train, txt_files_test = sklearn.model_selection.train_test_split(txt_files, test_size=0.1, random_state=42)
 
 # put txt files in large file
-with open("DATA/train.txt", "w") as f2:
+with open("DATA/train_chopin.txt", "w") as f2:
   for fn_txt in tqdm(txt_files_train):
     with open(fn_txt, "r") as f1:
       f2.write(f1.read())
       
-with open("DATA/test.txt", "w") as f2:
+with open("DATA/test_chopin.txt", "w") as f2:
   for fn_txt in tqdm(txt_files_test):
     with open(fn_txt, "r") as f1:
       f2.write(f1.read())
