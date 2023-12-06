@@ -12,10 +12,21 @@ dirname = os.path.dirname(__file__)
 
 import gpt2_composer
 
-DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
-TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
-midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
+composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
 
+#DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
+TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
+#midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
+
+
+midi_files = []
+for composer in composers:
+
+  if composer == 'rachmaninov':
+    continue
+  midi_files.append(glob.glob(os.path.join(os.path.join(dirname, 'DATA\\' + composer), "*.mid")))
+
+midi_files = sum(midi_files, [])
 for fn_mid in tqdm(midi_files):
   fn_txt = os.path.join(TOKENS_PATH, os.path.splitext(os.path.basename(fn_mid))[0] + ".txt")
   note_seq_examples = gpt2_composer.extract_4bar_sections(fn_mid)
@@ -32,12 +43,12 @@ txt_files = glob.glob(os.path.join(TOKENS_PATH, "*.txt"))
 txt_files_train, txt_files_test = sklearn.model_selection.train_test_split(txt_files, test_size=0.1, random_state=42)
 
 # put txt files in large file
-with open("DATA/train_chopin.txt", "w") as f2:
+with open("DATA/train_-rachmaninov.txt", "w") as f2:
   for fn_txt in tqdm(txt_files_train):
     with open(fn_txt, "r") as f1:
       f2.write(f1.read())
       
-with open("DATA/test_chopin.txt", "w") as f2:
+with open("DATA/test_-rachmaninov.txt", "w") as f2:
   for fn_txt in tqdm(txt_files_test):
     with open(fn_txt, "r") as f1:
       f2.write(f1.read())
