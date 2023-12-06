@@ -36,7 +36,9 @@ class AttributionHead(transformers.GPT2PreTrainedModel):
 
 
 tokenizer = gpt2_composer.load_tokenizer("")
-model = AttributionHead.from_pretrained("checkpoints\checkpoint-1000")
+f = AttributionHead.from_pretrained("checkpoints\checkpoint-1000")
+
+f_tilde = AttributionHead.from_pretrained("checkpoints\checkpoint-1000")
 # padding needed?
 tokenizer.enable_padding(length=512)
 
@@ -104,4 +106,9 @@ trainer = AttributionTrainer(
     model=model, args=training_args, train_dataset=train_dataset, eval_dataset=eval_dataset)
 trainer.train()
 
+
+#custom training loop to train two models (F and F_tilde) simultanously?
+# compute loss, depending on both models
+# call loss.backward to compute gradients for both models?
+# does this work?
 
