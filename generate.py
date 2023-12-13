@@ -6,7 +6,7 @@ import torch
 import gpt2_composer
 
 tokenizer = gpt2_composer.load_tokenizer("")
-model = transformers.AutoModelForCausalLM.from_pretrained("checkpoints\checkpoint-1000-chopin")
+model = transformers.AutoModelForCausalLM.from_pretrained("checkpoints\checkpoint_chopin\checkpoint-15000")
 
 
 # use Tristan Behrens model
@@ -15,16 +15,16 @@ model = transformers.AutoModelForCausalLM.from_pretrained("checkpoints\checkpoin
 # model = transformers.AutoModelForCausalLM.from_pretrained("TristanBehrens/js-fakes-4bars")
 #primer = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=40 NOTE_ON=44 NOTE_ON=47 NOTE_ON=50"
 
+for i in range(10):
+    primer = "PIECE_START"
 
-primer = "PIECE_START"
+    input_ids = torch.tensor([tokenizer.encode(primer).ids])
+    generated_ids = model.to("cpu").generate(input_ids, max_length=512, temperature=1.0, do_sample=True)
+    output = tokenizer.decode(np.array(generated_ids[0]))
 
-input_ids = torch.tensor([tokenizer.encode(primer).ids])
-generated_ids = model.to("cpu").generate(input_ids, max_length=512, temperature=1.0, do_sample=True)
-output = tokenizer.decode(np.array(generated_ids[0]))
+    with open("output/-chopin/tokens_" + str(i) + ".txt", "w") as f:
+      f.write(output)
 
-with open("test.txt", "w") as f:
-  f.write(output)
-
-note_sequence = gpt2_composer.token_sequence_to_note_sequence(output)
-note_seq.sequence_proto_to_midi_file(note_sequence, "output/finetune_chopin.mid")
+    note_sequence = gpt2_composer.token_sequence_to_note_sequence(output)
+    note_seq.sequence_proto_to_midi_file(note_sequence, "output/-chopin/data_" + str(i) + ".mid")
 #note_seq.plot_sequence(note_sequence)

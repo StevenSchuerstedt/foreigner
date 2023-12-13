@@ -36,9 +36,9 @@ class AttributionHead(transformers.GPT2PreTrainedModel):
 
 
 tokenizer = gpt2_composer.load_tokenizer("")
-f = AttributionHead.from_pretrained("checkpoints\checkpoint-1000")
+f = AttributionHead.from_pretrained("checkpoints\checkpoint-1000-chopin")
 
-f_tilde = AttributionHead.from_pretrained("checkpoints\checkpoint-1000")
+f_tilde = AttributionHead.from_pretrained("checkpoints\checkpoint-1000-chopin")
 # padding needed?
 tokenizer.enable_padding(length=512)
 
@@ -100,11 +100,16 @@ class AttributionTrainer(Trainer):
 
         return L_cont
 
+
+# output = f(torch.tensor([tokenizer.encode("PIECE_START").ids]))
+
+# print(output.shape)
+
 # train
-training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=10000, save_steps=1000, remove_unused_columns=False)
-trainer = AttributionTrainer(
-    model=model, args=training_args, train_dataset=train_dataset, eval_dataset=eval_dataset)
-trainer.train()
+# training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=10000, save_steps=1000, remove_unused_columns=False)
+# trainer = AttributionTrainer(
+#     model=model, args=training_args, train_dataset=train_dataset, eval_dataset=eval_dataset)
+# trainer.train()
 
 
 #custom training loop to train two models (F and F_tilde) simultanously?
@@ -112,3 +117,42 @@ trainer.train()
 # call loss.backward to compute gradients for both models?
 # does this work?
 
+
+def ntxent(t, s):
+       #temperature 
+       v = 1
+       #inputs are shaped according to batch size (default=8)
+
+       #sample one i randomly to draw according data?
+       i = 0
+       #t_i = F(x^+)
+       #s_i = F^~(x^~)
+       # compute NTXENT Loss
+       numerator = torch.exp(torch.dot(t[i], s[i]) / v)
+       denomerator = torch.sum(torch.exp(torch.mul(t[i], s)) / v)
+
+       denomerator2 = torch.sum(torch.exp(torch.mul(t, s[i])) / v)
+
+       L_cont = -(torch.log(numerator / denomerator) + torch.log(numerator / denomerator2))
+
+       return L_cont
+
+steps = 1000
+
+optimizer_F = torch.optim.SGD(f.parameters(), lr=0.5)
+optimizer_F_tilde = torch.optim.SGD(f.parameters(), lr=0.5)
+
+print("***START TRAINING***")
+for i in range(steps):
+  
+  #TODO: test custom training loop with optimizing two models with one combined loss
+  t = f(torch.tensor(train_dataset[0]['input_ids']))
+  s = f_tilde(torch.tensor(train_dataset[0]['input_ids']))
+  loss = ntxent(t, s)
+  loss.backward()
+  optimizer_F.step()
+  optimizer_F_tilde.step()
+
+  optimizer_F.zero_grad()
+  optimizer_F_tilde.zero_grad()
+  print("STEP " + i + " FINISHED")
