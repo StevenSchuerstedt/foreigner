@@ -17,19 +17,19 @@ def extract_4bar_sections(fn_mid):
     except note_seq.MIDIConversionError:
         return note_seq_examples
 
-
+    #seq = note_seq.midi_file_to_note_sequence(fn_mid)
     
 
 
     # split on tempo and time signature changes
     sub_seqs = note_seq.sequences_lib.split_note_sequence_on_time_changes(seq)
-
+   
     # iterate sub_seqs
     for sub_seq in sub_seqs:
         # quantize sequence
         seq_quant = note_seq.quantize_note_sequence(
             sub_seq, steps_per_quarter=STEPS_PER_QUARTER)
-
+        
         # split to 4bars parts
         seq_bars = split_note_seq_nbars(seq_quant)
 
