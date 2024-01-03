@@ -15,11 +15,12 @@ class AttributionHead(transformers.GPT2PreTrainedModel):
   def __init__(self, config):
     super().__init__(config)
 
-    
+    #does this work???
     self.transformer = transformers.GPT2Model(config)
 
 
     #freeze GPT2 layers
+    #TODO freeze later, optimizer only over linear layer parameter
     for param in self.transformer.parameters():
       param.requires_grad = False
 
@@ -148,7 +149,7 @@ def ntxent(t, s, v):
        return L_cont/len(t)
 
 optimizer_F = torch.optim.SGD(f.parameters(), lr=0.5)
-optimizer_F_tilde = torch.optim.SGD(f.parameters(), lr=0.5)
+optimizer_F_tilde = torch.optim.SGD(f_tilde.parameters(), lr=0.5)
 
 
 n_epochs = 10    # number of epochs to run
@@ -174,6 +175,9 @@ for i in range(n_epochs):
     v = 1
     loss = ntxent(t, s, v)
     loss.backward()
+
+    #TODO does this exist parameter.grad 
+
     optimizer_F.step()
     optimizer_F_tilde.step()
 
@@ -185,3 +189,5 @@ for i in range(n_epochs):
 
 f.save_pretrained('checkpoint_attribute')
 f_tilde.save_pretrained('checkpoint_attribute')
+
+#TODO nan: pytorch detect anomaly
