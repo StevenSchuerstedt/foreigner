@@ -79,59 +79,13 @@ data_x = tokenized_datasets["input"]
 data_x_tilde = tokenized_datasets["generated"]
 
 
-
-#Attribution Trainer
-
-class AttributionTrainer(Trainer):
-    def compute_loss(self, model, inputs, return_outputs=False):
-        
-        #temperature 
-        v = 1
-
-        #inputs are shaped according to batch size (default=8)
-
-        #sample one i randomly to draw according data?
-        i = 3
-        #t_i = F(x^+)
-        #s_i = F^~(x^~)
-
-        #Forward Pass
-        f = model
-        ftilde = model
-
-        t = f(inputs['x^-'])
-        s = ftilde(inputs['x^~'])
-
-        # compute NTXENT Loss
-        numerator = torch.exp(torch.dot(t[i], s[i]) / v)
-        denomerator = torch.sum(torch.exp(torch.mul(t[i], s)) / v)
-
-        denomerator2 = torch.sum(torch.exp(torch.mul(t, s[i])) / v)
-
-        L_cont = -(torch.log(numerator / denomerator) + torch.log(numerator / denomerator2))
-
-        return L_cont
-
-
-# output = f(torch.tensor([tokenizer.encode("PIECE_START").ids]))
-
-# print(output.shape)
-
-# train
-# training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=10000, save_steps=1000, remove_unused_columns=False)
-# trainer = AttributionTrainer(
-#     model=model, args=training_args, train_dataset=train_dataset, eval_dataset=eval_dataset)
-# trainer.train()
-
-
 #custom training loop to train two models (F and F_tilde) simultanously?
 # compute loss, depending on both models
 # call loss.backward to compute gradients for both models?
-# does this work?
+# does this work? => I guess
 
 
 def ntxent(t, s, v):
-       #sample one i randomly to draw according data?
        #iterate over all is
        L_cont = 0
        for i in range(len(t)):

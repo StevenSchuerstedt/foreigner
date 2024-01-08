@@ -39,8 +39,8 @@ class AttributionHead(transformers.GPT2PreTrainedModel):
 
 
 tokenizer = gpt2_composer.load_tokenizer("")
-f = AttributionHead.from_pretrained('checkpoint_attribute_f')
-f_tilde = AttributionHead.from_pretrained('checkpoint_attribute_f_tilde')
+f = AttributionHead.from_pretrained('checkpoints/checkpoint_attribute_f')
+f_tilde = AttributionHead.from_pretrained('checkpoints/checkpoint_attribute_f_tilde')
 
 # use Tristan Behrens model
 # tokenizer = transformers.AutoTokenizer.from_pretrained("TristanBehrens/js-fakes-4bars")
@@ -61,4 +61,7 @@ feature_vec_x_tilde = f_tilde(input_ids_x_tilde)
 
 output = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
 
+
+print("feature_vec_x", feature_vec_x[0].detach().numpy())
+print("feature_vec_x_tilde", feature_vec_x_tilde[0].detach().numpy())
 print("output: ", output)
