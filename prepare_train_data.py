@@ -42,6 +42,7 @@ for composer in composers:
         token_string = " ".join(gpt2_composer.note_sequence_to_token_sequence(seq))
         txt_file.write(token_string + "\n")
         count = count + 1
+  print(count)
 
 
 

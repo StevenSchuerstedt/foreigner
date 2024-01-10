@@ -12,9 +12,9 @@ dirname = os.path.dirname(__file__)
 
 import gpt2_composer
 
-#composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
+composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
 
-composers = ['rachmaninov']
+#composers = ['rachmaninov']
 
 DATASET_PATH = os.path.join(dirname, 'DATA')
 TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
@@ -38,17 +38,17 @@ for fn_mid in tqdm(midi_files):
 
 
 
-txt_files = glob.glob(os.path.join(TOKENS_PATH, "*.txt"))
-# train test split
-txt_files_train, txt_files_test = sklearn.model_selection.train_test_split(txt_files, test_size=0.1, random_state=42)
+# txt_files = glob.glob(os.path.join(TOKENS_PATH, "*.txt"))
+# # train test split
+# txt_files_train, txt_files_test = sklearn.model_selection.train_test_split(txt_files, test_size=0.1, random_state=42)
 
-# put txt files in large file
-with open("DATA/train_rachmaninov.txt", "w") as f2:
-  for fn_txt in tqdm(txt_files_train):
-    with open(fn_txt, "r") as f1:
-      f2.write(f1.read() + '\n')
+# # put txt files in large file
+# with open("DATA/train_rachmaninov.txt", "w") as f2:
+#   for fn_txt in tqdm(txt_files_train):
+#     with open(fn_txt, "r") as f1:
+#       f2.write(f1.read() + '\n')
       
-with open("DATA/test_rachmaninov.txt", "w") as f2:
-  for fn_txt in tqdm(txt_files_test):
-    with open(fn_txt, "r") as f1:
-      f2.write(f1.read())
+# with open("DATA/test_rachmaninov.txt", "w") as f2:
+#   for fn_txt in tqdm(txt_files_test):
+#     with open(fn_txt, "r") as f1:
+#       f2.write(f1.read())

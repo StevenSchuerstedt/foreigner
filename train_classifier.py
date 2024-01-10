@@ -56,7 +56,7 @@ tokenizer.enable_padding(length=512)
 
 
 # load dataset
-data_files = {"generated": "DATA/attribution_generated.txt", "input": "DATA/attribution_input.txt"}
+data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt"}
 dataset = datasets.load_dataset("text", data_files=data_files)
 
 
@@ -84,21 +84,28 @@ data_x_tilde = tokenized_datasets["generated"]
 # call loss.backward to compute gradients for both models?
 # does this work? => I guess
 
-
 def ntxent(t, s, v):
        #iterate over all is
        L_cont = 0
        for i in range(len(t)):
-       #i = 0
-       #t_i = F(x^+)
-       #s_i = F^~(x^~)
-       # compute NTXENT Loss
-            numerator = torch.exp(torch.dot(t[i], s[i]) / v)
-            denomerator = torch.sum(torch.exp(torch.mul(t[i], s)) / v)
+            #t_i = F(x^+) => exemplar Set
+            #s_i = F^~(x^~) => generated Example
 
-            denomerator2 = torch.sum(torch.exp(torch.mul(t, s[i])) / v)
 
-            L_cont += -(torch.log(numerator / denomerator) + torch.log(numerator / denomerator2))
+            # compute NTXENT Loss
+            A = torch.dot(t[i], s[i]) / v
+            B = torch.matmul(t[i], s.transpose(0,1)) / v
+            C = torch.matmul(t, s[i]) / v
+
+            #!! use logsumexp to avoid NAN gradients, as exp() will produce numbers outside floating point range
+            #TODO: logsumexp(A, 0) = A ??
+
+            A1 = torch.logsumexp(A, 0)
+            B1 = torch.logsumexp(B, 0)
+            C1 = torch.logsumexp(C, 0)
+
+            L_cont += -( (A1 - B1) + (A1 - C1))
+            #L_cont += -(torch.log(numerator / denomerator) + torch.log(numerator / denomerator2))
 
        return L_cont/len(t)
 
@@ -106,13 +113,35 @@ optimizer_F = torch.optim.SGD(f.parameters(), lr=0.5)
 optimizer_F_tilde = torch.optim.SGD(f_tilde.parameters(), lr=0.5)
 
 
-n_epochs = 10    # number of epochs to run
-batch_size = 32  # size of each batch
+n_epochs = 100    # number of epochs to run
+batch_size = 8  # size of each batch
 batches_per_epoch = len(data_x) // batch_size
 
+device = 'cpu'
 
-f = f.to('cuda')
-f_tilde = f_tilde.to('cuda')
+# if torch.cuda.is_available:
+#    device = 'cuda'
+
+f = f.to(device)
+f_tilde = f_tilde.to(device)
+
+def calculate_regularizer():
+   #L1-Regularization
+   f_param = []
+
+   for param in f.parameters():
+    f_param.append(param)
+   f_tilde_param = []
+   for param in f_tilde.parameters():
+    f_tilde_param.append(param)
+   w = f_param[-1]
+   w_tilde = f_tilde_param[-1]
+   
+   regularizer_loss = 0.5 * (torch.norm(torch.t(w) * w) + torch.norm(torch.t(w_tilde) * w_tilde))
+   return regularizer_loss
+
+torch.autograd.set_detect_anomaly(True)
+#TODO: implement regularizer?
 
 print("***START TRAINING***")
 for i in range(n_epochs):
@@ -123,14 +152,27 @@ for i in range(n_epochs):
     X_tilde_batch = data_x_tilde[start:start+batch_size]
 
     #TODO: test custom training loop with optimizing two models with one combined loss
-    t = f(torch.tensor(X_batch['input_ids']).to('cuda'))
-    s = f_tilde(torch.tensor(X_tilde_batch['input_ids']).to('cuda'))
+    t = f(torch.tensor(X_batch['input_ids']).to(device))
+    s = f_tilde(torch.tensor(X_tilde_batch['input_ids']).to(device))
     #temperature
     v = 1
     loss = ntxent(t, s, v)
+
+    #TODO: add L1 (?) Regularization
+    l = 0.05
+    loss = loss + l * calculate_regularizer()
+    
+
     loss.backward()
 
-    #TODO does this exist parameter.grad 
+    # debug gradients
+    # p = []
+    # for param in f.parameters():
+    #    #print(param)
+    #    p.append(param)
+    
+    # print(p[-1].grad)
+    
 
     optimizer_F.step()
     optimizer_F_tilde.step()
@@ -141,7 +183,5 @@ for i in range(n_epochs):
   print("STEP " + str(i) + " FINISHED")
 
 
-f.save_pretrained('checkpoint_attribute')
-f_tilde.save_pretrained('checkpoint_attribute')
-
-#TODO nan: pytorch detect anomaly
+f.save_pretrained('checkpoint_attribute_f')
+f_tilde.save_pretrained('checkpoint_attribute_f_tilde')
