@@ -6,7 +6,7 @@ import torch
 import gpt2_composer
 
 tokenizer = gpt2_composer.load_tokenizer("")
-model = transformers.AutoModelForCausalLM.from_pretrained("checkpoints\checkpoint_haydn\checkpoint-2000")
+#model = transformers.AutoModelForCausalLM.from_pretrained("checkpoints\checkpoint_haydn\checkpoint-2000")
 
 #composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
 
@@ -22,16 +22,30 @@ device = 'cpu'
 if torch.cuda.is_available():
     device = 'cuda'
 
-for i in range(30):
-    primer = "PIECE_START"
+# for i in range(30):
+#     primer = "PIECE_START"
 
+#     input_ids = torch.tensor([tokenizer.encode(primer).ids])
+#     generated_ids = model.to(device).generate(input_ids.to(device), max_length=512, temperature=1.0, do_sample=True)
+#     output = tokenizer.decode(np.array(generated_ids[0].to(device)))
+
+#     with open("output/haydn/tokens_" + str(i) + ".txt", "w") as f:
+#       f.write(output)
+
+#     #note_sequence = gpt2_composer.token_sequence_to_note_sequence(output)
+#     #note_seq.sequence_proto_to_midi_file(note_sequence, "output/grieg/data_" + str(i) + ".mid")
+# #note_seq.plot_sequence(note_sequence)
+      
+
+composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
+for composer in composers:
+   print(composer)
+   model = transformers.AutoModelForCausalLM.from_pretrained("checkpoints\checkpoint_" + composer + "\checkpoint-3000")
+   for i in range(100):
+    primer = "PIECE_START"
+    print(i)
     input_ids = torch.tensor([tokenizer.encode(primer).ids])
     generated_ids = model.to(device).generate(input_ids.to(device), max_length=512, temperature=1.0, do_sample=True)
-    output = tokenizer.decode(np.array(generated_ids[0].to(device)))
-
-    with open("output/haydn/tokens_" + str(i) + ".txt", "w") as f:
+    output = tokenizer.decode(np.array(generated_ids[0].to('cpu')))
+    with open("output/attribution/" + composer + "_" + str(i) + ".txt", "w") as f:
       f.write(output)
-
-    #note_sequence = gpt2_composer.token_sequence_to_note_sequence(output)
-    #note_seq.sequence_proto_to_midi_file(note_sequence, "output/grieg/data_" + str(i) + ".mid")
-#note_seq.plot_sequence(note_sequence)
