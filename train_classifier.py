@@ -109,6 +109,27 @@ def ntxent(t, s, v):
 
        return L_cont/len(t)
 
+def ntxent_jan(t, s, v):
+       #iterate over all is
+       L_cont = 0
+       #8 composers
+       for i in range(8):
+            #all data of one composer
+            for j in range(1):
+               #generate a bach
+               x_tilde = s[i + j]
+               x_plus = t[i + j]
+               A = torch.dot(x_plus, x_tilde)
+               B = torch.matmul(x_plus, t.transpose(0,1))
+               C = torch.matmul(t, x_tilde)
+
+               A1 = torch.logsumexp(A, 0)
+               B1 = torch.logsumexp(B, 0)
+               C1 = torch.logsumexp(C, 0)
+
+               L_cont += -( (A1 - B1) + (A1 - C1))
+       return L_cont/len(t)
+
 optimizer_F = torch.optim.SGD(f.parameters(), lr=0.5)
 optimizer_F_tilde = torch.optim.SGD(f_tilde.parameters(), lr=0.5)
 
@@ -140,7 +161,8 @@ def calculate_regularizer():
    regularizer_loss = 0.5 * (torch.norm(torch.t(w) * w) + torch.norm(torch.t(w_tilde) * w_tilde))
    return regularizer_loss
 
-torch.autograd.set_detect_anomaly(True)
+#torch.autograd.set_detect_anomaly(True)
+
 #TODO: implement regularizer?
 
 print("***START TRAINING***")
@@ -156,7 +178,7 @@ for i in range(n_epochs):
     s = f_tilde(torch.tensor(X_tilde_batch['input_ids']).to(device))
     #temperature
     v = 1
-    loss = ntxent(t, s, v)
+    loss = ntxent_jan(t, s, v)
 
     #TODO: add L1 (?) Regularization
     l = 0.05
@@ -164,6 +186,10 @@ for i in range(n_epochs):
     
 
     loss.backward()
+
+    #clip gradients TODO: alternative: register hook to clip DURING backpropagation
+    torch.nn.utils.clip_grad_norm_(f.parameters(), 100, error_if_nonfinite=True)
+    torch.nn.utils.clip_grad_norm_(f_tilde.parameters(), 100, error_if_nonfinite=True)
 
     # debug gradients
     # p = []
@@ -183,5 +209,5 @@ for i in range(n_epochs):
   print("STEP " + str(i) + " FINISHED")
 
 
-f.save_pretrained('checkpoint_attribute_f')
-f_tilde.save_pretrained('checkpoint_attribute_f_tilde')
+f.save_pretrained('checkpoint_attribute_f_jan')
+f_tilde.save_pretrained('checkpoint_attribute_f_tilde_jan')
