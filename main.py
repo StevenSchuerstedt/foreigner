@@ -24,18 +24,18 @@ TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 #midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
 
 
-t = torch.tensor(np.ones([8, 512]))
-s = torch.tensor(np.ones([8, 512]))
+# t = torch.tensor(np.ones([8, 512]))
+# s = torch.tensor(np.ones([8, 512]))
 
-i = 3
+# i = 3
 
-A = torch.dot(t[i], s[i])
+# A = torch.dot(t[i], s[i])
 
-B = torch.matmul(t[i], s.transpose(0,1))
+# B = torch.matmul(t[i], s.transpose(0,1))
 
-print(A)
-C = torch.logsumexp(A, 0)
-print(C)
+# print(A)
+# C = torch.logsumexp(A, 0)
+# print(C)
 
 # compute NTXENT Loss
       #     A = torch.exp(torch.dot(t[i], s[i]) / v)
@@ -43,3 +43,12 @@ print(C)
       #     C = torch.mul(t, s[i]) / v
 
       #     L_cont += -( (torch.log(A) - torch.logsumexp(B)) + (torch.log(A) - torch.logsumexp(C)))
+
+
+s = torch.tensor(np.ones([10]))
+
+print(s)
+
+t = torch.sum(torch.relu(torch.exp(s - 0.3)))
+
+print(t)

@@ -20,7 +20,6 @@ class AttributionHead(transformers.GPT2PreTrainedModel):
 
 
     #freeze GPT2 layers
-    #TODO freeze later, optimizer only over linear layer parameter
     for param in self.transformer.parameters():
       param.requires_grad = False
 
@@ -45,6 +44,7 @@ tokenizer = gpt2_composer.load_tokenizer("")
 f = AttributionHead.from_pretrained("checkpoints\checkpoint-15000-basemodel")
 
 f_tilde = AttributionHead.from_pretrained("checkpoints\checkpoint-15000-basemodel")
+
 # padding needed?
 tokenizer.enable_padding(length=512)
 
@@ -109,23 +109,25 @@ def ntxent(t, s, v):
 
        return L_cont/len(t)
 
-def ntxent_jan(t, s, v):
+def ntxent_version2(t, s, v):
        #iterate over all is
        L_cont = 0
        #8 composers
        for i in range(8):
             #all data of one composer
-            for j in range(1):
+            for j in range(100):
                #generate a bach
-               x_tilde = s[i + j]
-               x_plus = t[i + j]
+               x_tilde = s[i * 100 + j]
+               x_plus = t[i * 100 + j]
                A = torch.dot(x_plus, x_tilde)
                B = torch.matmul(x_plus, t.transpose(0,1))
                C = torch.matmul(t, x_tilde)
 
-               A1 = torch.logsumexp(A, 0)
-               B1 = torch.logsumexp(B, 0)
-               C1 = torch.logsumexp(C, 0)
+               A1 = A
+               B1 = B
+               C1 = torch.logsumexp(C, dim=0)
+
+              #TODO: count how many nan values, division by zero ?? how many nan in sum of logsumexp, in iterations
 
                L_cont += -( (A1 - B1) + (A1 - C1))
        return L_cont/len(t)
@@ -178,7 +180,7 @@ for i in range(n_epochs):
     s = f_tilde(torch.tensor(X_tilde_batch['input_ids']).to(device))
     #temperature
     v = 1
-    loss = ntxent_jan(t, s, v)
+    loss = ntxent(t, s, v)
 
     #TODO: add L1 (?) Regularization
     l = 0.05
@@ -209,5 +211,5 @@ for i in range(n_epochs):
   print("STEP " + str(i) + " FINISHED")
 
 
-f.save_pretrained('checkpoint_attribute_f_jan')
-f_tilde.save_pretrained('checkpoint_attribute_f_tilde_jan')
+f.save_pretrained('checkpoint_attribute_f')
+f_tilde.save_pretrained('checkpoint_attribute_f_tilde')
