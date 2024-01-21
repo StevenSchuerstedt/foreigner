@@ -10,7 +10,7 @@ import torch
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
-
+import math
 import note_seq
 
 dirname = os.path.dirname(__file__)
@@ -45,10 +45,12 @@ TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
       #     L_cont += -( (torch.log(A) - torch.logsumexp(B)) + (torch.log(A) - torch.logsumexp(C)))
 
 
-s = torch.tensor(np.ones([10]))
+# s = torch.tensor(np.ones([10]))
 
-print(s)
+# print(s)
 
-t = torch.sum(torch.relu(torch.exp(s - 0.3)))
+# t = torch.sum(torch.relu(torch.exp(s - 0.3)))
 
-print(t)
+# print(t)
+
+print(math.floor(499 / 100))

@@ -7,6 +7,8 @@ import datasets
 import gpt2_composer
 from torch import nn
 from transformers import Trainer
+import random
+import math
 
 
 # create Attribution model
@@ -41,9 +43,9 @@ class AttributionHead(transformers.GPT2PreTrainedModel):
 
 
 tokenizer = gpt2_composer.load_tokenizer("")
-f = AttributionHead.from_pretrained("checkpoints\checkpoint-15000-basemodel")
+f = AttributionHead.from_pretrained("checkpoints\checkpoint-22500_new_basemodel")
 
-f_tilde = AttributionHead.from_pretrained("checkpoints\checkpoint-15000-basemodel")
+f_tilde = AttributionHead.from_pretrained("checkpoints\checkpoint-22500_new_basemodel")
 
 # padding needed?
 tokenizer.enable_padding(length=512)
@@ -56,7 +58,7 @@ tokenizer.enable_padding(length=512)
 
 
 # load dataset
-data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt"}
+data_files = {"generated": "DATA/attribution_generated.txt", "input": "DATA/attribution_input.txt"}
 dataset = datasets.load_dataset("text", data_files=data_files)
 
 
@@ -91,18 +93,30 @@ def ntxent(t, s, v):
             #t_i = F(x^+) => exemplar Set
             #s_i = F^~(x^~) => generated Example
 
+            #print(t[i])
+            # if(math.isnan(t[i][i].to('cpu').detach().numpy())):
+            #    print(t[i])
+            #    print("t[i] is nan")
+            # if(math.isnan(s[i][i].to('cpu').detach().numpy())):
+            #    print(s[i])
+            #    print("s[i] is nan")
+
 
             # compute NTXENT Loss
             A = torch.dot(t[i], s[i]) / v
             B = torch.matmul(t[i], s.transpose(0,1)) / v
             C = torch.matmul(t, s[i]) / v
 
-            #!! use logsumexp to avoid NAN gradients, as exp() will produce numbers outside floating point range
-            #TODO: logsumexp(A, 0) = A ??
 
-            A1 = torch.logsumexp(A, 0)
-            B1 = torch.logsumexp(B, 0)
-            C1 = torch.logsumexp(C, 0)
+            #!! use logsumexp to avoid NAN gradients, as exp() will produce numbers outside floating point range
+        
+            A1 = A
+            B1 = torch.logsumexp(B, dim=0)
+            C1 = torch.logsumexp(C, dim=0)
+
+            # if(math.isnan(C1.item())):
+            #    print(C1.item())
+            #    print("C1 is nan")
 
             L_cont += -( (A1 - B1) + (A1 - C1))
             #L_cont += -(torch.log(numerator / denomerator) + torch.log(numerator / denomerator2))
@@ -124,7 +138,7 @@ def ntxent_version2(t, s, v):
                C = torch.matmul(t, x_tilde)
 
                A1 = A
-               B1 = B
+               B1 = torch.logsumexp(B, dim=0)
                C1 = torch.logsumexp(C, dim=0)
 
               #TODO: count how many nan values, division by zero ?? how many nan in sum of logsumexp, in iterations
@@ -132,18 +146,20 @@ def ntxent_version2(t, s, v):
                L_cont += -( (A1 - B1) + (A1 - C1))
        return L_cont/len(t)
 
-optimizer_F = torch.optim.SGD(f.parameters(), lr=0.5)
-optimizer_F_tilde = torch.optim.SGD(f_tilde.parameters(), lr=0.5)
+optimizer_F = torch.optim.Adam(f.parameters(), betas=[0.9, 0.999])
+optimizer_F_tilde = torch.optim.Adam(f_tilde.parameters(), betas=[0.9, 0.999])
 
 
 n_epochs = 100    # number of epochs to run
-batch_size = 8  # size of each batch
+
+#batch size needs to align with len of composer data (so shuffling cannot produce wrong pairing)
+batch_size = 20  # size of each batch
 batches_per_epoch = len(data_x) // batch_size
 
 device = 'cpu'
 
-# if torch.cuda.is_available:
-#    device = 'cuda'
+if torch.cuda.is_available:
+   device = 'cuda'
 
 f = f.to(device)
 f_tilde = f_tilde.to(device)
@@ -170,10 +186,18 @@ def calculate_regularizer():
 print("***START TRAINING***")
 for i in range(n_epochs):
   for j in range(batches_per_epoch):
+
+    optimizer_F.zero_grad()
+    optimizer_F_tilde.zero_grad()
+
     start = j * batch_size
     # take a batch
     X_batch = data_x[start:start+batch_size]
     X_tilde_batch = data_x_tilde[start:start+batch_size]
+
+    #shuffle batch for random pairing
+    random.shuffle(X_batch)
+    random.shuffle(X_tilde_batch)
 
     #TODO: test custom training loop with optimizing two models with one combined loss
     t = f(torch.tensor(X_batch['input_ids']).to(device))
@@ -190,8 +214,8 @@ for i in range(n_epochs):
     loss.backward()
 
     #clip gradients TODO: alternative: register hook to clip DURING backpropagation
-    torch.nn.utils.clip_grad_norm_(f.parameters(), 100, error_if_nonfinite=True)
-    torch.nn.utils.clip_grad_norm_(f_tilde.parameters(), 100, error_if_nonfinite=True)
+    #torch.nn.utils.clip_grad_norm_(f.parameters(), 100, error_if_nonfinite=True)
+    #torch.nn.utils.clip_grad_norm_(f_tilde.parameters(), 100, error_if_nonfinite=True)
 
     # debug gradients
     # p = []
@@ -205,8 +229,7 @@ for i in range(n_epochs):
     optimizer_F.step()
     optimizer_F_tilde.step()
 
-    optimizer_F.zero_grad()
-    optimizer_F_tilde.zero_grad()
+    
     print("BATCH " + str(j) + " FINISHED")
   print("STEP " + str(i) + " FINISHED")
 
