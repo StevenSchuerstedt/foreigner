@@ -1,3 +1,4 @@
+import copy
 from typing import Optional
 import numpy as np
 import note_seq
@@ -15,8 +16,8 @@ import math
 #load model
 
 tokenizer = gpt2_composer.load_tokenizer("")
-f = AttributionHead.from_pretrained('checkpoint_attribute_f_jan')
-f_tilde = AttributionHead.from_pretrained('checkpoint_attribute_f_tilde_jan')
+f = AttributionHead.from_pretrained('checkpoint_attribute_f')
+f_tilde = AttributionHead.from_pretrained('checkpoint_attribute_f_tilde')
 
 #load data 
 data_files = {"generated": "DATA/attribution_generated.txt", "input": "DATA/attribution_input.txt"}
@@ -43,98 +44,155 @@ data_x_tilde = tokenized_datasets["generated"]
 
 
 #start with only input data, generated data, x and x_tilde?? calculate s in loss function? or beforehand
-
-
-x_tilde_index = random.choice(range(len(data_x_tilde)))
-
-x_tilde = data_x_tilde[x_tilde_index]
-
-print(x_tilde_index)
-
-input_ids_x_tilde = torch.tensor([x_tilde['input_ids']])
-
-print(input_ids_x_tilde)
-
-
-feature_vec_x_tilde = f_tilde(input_ids_x_tilde)
-
-#calculate similarity scores
-
-#list of similarit scores, => s = dot(F(x), F_tilde(x_tilde))
-s = []
-
-#list of ground truths (0 = false, 1 = true)
-t = []
-
-for j in range(2):
-    for i in range(8):
-        x_index = random.choice(range(100)) + i * 100 
-        input_ids_x = torch.tensor([data_x[x_index]['input_ids']])
-        feature_vec_x = f(input_ids_x)
-
-        similarity_score = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
-    
-        s.append(similarity_score)
-        if(math.floor(x_tilde_index / 100) == math.floor(x_index / 100)):
-            t.append(1)
-        else:
-            t.append(0)
-
-        print("x_index:", x_index)
-
- 
-
-datapair = {"x_tilde": x_tilde_index,
-       "similarity_scores": s,
-       "ground_truths": t
-       }
-
-print(datapair)
-
 datapairs = []
 
 
+for n in range(10):
+
+    x_tilde_index = random.choice(range(len(data_x_tilde)))
+
+    x_tilde = data_x_tilde[x_tilde_index]
+
+    #print(x_tilde_index)
+
+    input_ids_x_tilde = torch.tensor([x_tilde['input_ids']])
+
+    #print(input_ids_x_tilde)
+
+
+    feature_vec_x_tilde = f_tilde(input_ids_x_tilde)
+
+    #calculate similarity scores
+
+    #list of similarit scores, => s = dot(F(x), F_tilde(x_tilde))
+    s = []
+
+    #list of ground truths (0 = false, 1 = true)
+    t = []
+
+    for j in range(2):
+        for i in range(8):
+            x_index = random.choice(range(100)) + i * 100 
+            input_ids_x = torch.tensor([data_x[x_index]['input_ids']])
+            feature_vec_x = f(input_ids_x)
+
+            similarity_score = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
+        
+            s.append(similarity_score)
+            if(math.floor(x_tilde_index / 100) == math.floor(x_index / 100)):
+                t.append(1)
+            else:
+                t.append(0)
+
+            #print("x_index:", x_index)
+
+    
+
+    datapair = {"x_tilde": x_tilde_index,
+        "similarity_scores": s,
+        "ground_truths": t
+        }
+
+
+    datapairs.append(datapair)
+
+#print(datapairs)
+
+# P = torch.tensor(np.ones(len(datapairs[0]['similarity_scores'])))
+
+# print("similarity_scores: ", datapairs[0]['similarity_scores'])
+# print("similarity_scores sorted: ", np.flip(np.sort(datapairs[0]['similarity_scores'])))
+
+# for i in range(len(datapairs[0]['similarity_scores'])):
+        
+#             sorted = np.flip(np.sort(datapairs[0]['similarity_scores']))
+#             n = F.softplus(torch.exp(torch.tensor(datapairs[0]['similarity_scores'][i] - sorted[0])/1) - 0)
+#             print("n: ", n)
+
+
+#             A = torch.exp( torch.tensor((sorted - sorted[0]))/1 )
+#             print("A: ", A)
+#             B = F.softplus( A- 0)
+#             d = torch.sum(B)
+        
+#             P[i] = n / d
+
+# print("P:", P)
+
 def klLoss(input, target):
-    #TODO: add expectation value over all x_tilde??
-    return F.kl_div(input, target)
+    expectation_value = 0
+    for datapair in datapairs:
 
+        #construct ground truths
+        S = torch.tensor(np.zeros(len(datapair['ground_truths'])))
 
-tau = torch.nn.Parameter(torch.Tensor([1.0]))
-lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
+        count_ground_truth = np.count_nonzero(datapair['ground_truths'])
 
-#TODO: calculate Pr with tau und lambda
+        for index, element in enumerate(datapair['ground_truths']):
+            if element == 1:
+                S[index] = 1 / count_ground_truth
 
+        #construct probabilites
 
-similarity_count = 8
+        P = model(datapair['similarity_scores'])
 
+        print("S", S)
+        print("P", P)
+        #calculate kl difference
+        #TODO: test order ( P, S)
+        kl = F.kl_div(S, P)
+        print("kl:", kl)
+        expectation_value = expectation_value + kl
+    print("expectation_value", expectation_value / len(datapairs))
+    return expectation_value / len(datapairs)
 
-#calulate P distribution
-P = torch.tensor(np.ones[similarity_count])
+class ProbabilityScore(torch.nn.Module):
+  def __init__(self):
+    super().__init__()
+    self.tau = torch.nn.Parameter(torch.Tensor([1.0]))
+    self.lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
 
-for i in range(similarity_count):
-    n = torch.relu(torch.exp((s[i] - s[0])/tau) - lámbda)
+  def forward(self, similarity_scores):
+    P = torch.tensor(np.ones(len(similarity_scores)))
+           
+    for i in range(len(similarity_scores)):
+        sorted = np.flip(np.sort(similarity_scores))
+        n = F.softplus(torch.exp(torch.tensor(similarity_scores[i] - sorted[0])/self.tau) - self.lámbda)
+                       
+        A = torch.exp( torch.tensor((sorted - sorted[0]))/self.tau )
+        B = F.softplus( A- self.lámbda)
+        d = torch.sum(B)
+                       
+        P[i] = n / d
 
-    d = torch.sum(torch.relu(torch.exp( (s - s[0])/tau ) - lámbda))
+    return P
 
-    P[i] = n / d
-
-#construct ground truth distribution
-S = torch.tensor(np.ones[similarity_count])
-
-#S is identicator function
-#S = ...
-
-
+model = ProbabilityScore()
+# tau = torch.nn.Parameter(torch.Tensor([1.0]))
+# lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
 #TODO: does this work??
-optimizer = torch.optim.SGD([tau, lámbda], lr=0.005)
+optimizer = torch.optim.Adam(model.parameters())
 
 
 #training loop
-loss = klLoss(S, P)
+steps = 10
+print("Start TRAINING!!")
+print("lámbda", model.lámbda)
+print("tau", model.tau)
+for i in range(steps):
+    
+    loss = klLoss(0,0)
 
-optimizer.zero_grad()
+    loss.backward()
 
-loss.backward()
+    optimizer.step()
 
-optimizer.step()
+    optimizer.zero_grad()
 
+    print("STEP ", str(i), "Finished!!")
+    print("lámbda", model.lámbda)
+    print("tau", model.tau)
+
+print("FINISHED!! RESULTS:")
+print("lámbda", model.lámbda)
+print("tau", model.tau)
