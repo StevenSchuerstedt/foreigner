@@ -136,12 +136,12 @@ def klLoss(input, target):
 
         P = model(datapair['similarity_scores'])
 
-        print("S", S)
-        print("P", P)
+        #print("S", S)
+        #print("P", P)
         #calculate kl difference
         #TODO: test order ( P, S)
         kl = F.kl_div(S, P)
-        print("kl:", kl)
+        #print("kl:", kl)
         expectation_value = expectation_value + kl
     print("expectation_value", expectation_value / len(datapairs))
     return expectation_value / len(datapairs)
@@ -190,9 +190,12 @@ for i in range(steps):
     optimizer.zero_grad()
 
     print("STEP ", str(i), "Finished!!")
-    print("lámbda", model.lámbda)
-    print("tau", model.tau)
+    print("LOSS: ", loss)
+    #print("lámbda", model.lámbda)
+    #print("tau", model.tau)
 
 print("FINISHED!! RESULTS:")
 print("lámbda", model.lámbda)
 print("tau", model.tau)
+
+torch.save(model, 'probability_score/P')

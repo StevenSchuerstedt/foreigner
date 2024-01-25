@@ -9,43 +9,13 @@ from torch import nn
 from transformers import Trainer
 import random
 import math
-
-
-# create Attribution model
-class AttributionHead(transformers.GPT2PreTrainedModel):
-  
-  def __init__(self, config):
-    super().__init__(config)
-
-    #does this work???
-    self.transformer = transformers.GPT2Model(config)
-
-
-    #freeze GPT2 layers
-    for param in self.transformer.parameters():
-      param.requires_grad = False
-
-    self.model_parallel = False
-    #what is size of features going out??
-    out_features = 512
-    self.attribution_head = torch.nn.Linear(config.n_embd, out_features)
-
-  def forward(self, input_ids, labels: Optional[torch.LongTensor] = None,):
-    transformer_outputs = self.transformer(input_ids)
-
-    hidden_states = transformer_outputs[0]
-
-    #only select last token TODO: change model to BERT? 
-    hidden_state = hidden_states[:, -1]
-
-    attribution_logits = self.attribution_head(hidden_state)
-    return attribution_logits 
+from AttributionHead import AttributionHead
 
 
 tokenizer = gpt2_composer.load_tokenizer("")
-f = AttributionHead.from_pretrained("checkpoints\checkpoint-22500_new_basemodel")
+f = AttributionHead("checkpoints\checkpoint-20000")
 
-f_tilde = AttributionHead.from_pretrained("checkpoints\checkpoint-22500_new_basemodel")
+f_tilde = AttributionHead("checkpoints\checkpoint-20000")
 
 # padding needed?
 tokenizer.enable_padding(length=512)
@@ -58,8 +28,11 @@ tokenizer.enable_padding(length=512)
 
 
 # load dataset
-data_files = {"generated": "DATA/attribution_generated.txt", "input": "DATA/attribution_input.txt"}
+data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt", "test_generated": "DATA/attribution_generated_old.txt", "test_input": "DATA/attribution_input_old.txt"}
 dataset = datasets.load_dataset("text", data_files=data_files)
+
+# load validation set
+
 
 
 def tokenize_function(examples):
@@ -79,6 +52,9 @@ tokenized_datasets = dataset.map(
     tokenize_function, batched=True, remove_columns=["text"])
 data_x = tokenized_datasets["input"]
 data_x_tilde = tokenized_datasets["generated"]
+
+test_x = tokenized_datasets['test_input']
+test_x_tilde = tokenized_datasets['test_generated']
 
 
 #custom training loop to train two models (F and F_tilde) simultanously?
@@ -146,20 +122,30 @@ def ntxent_version2(t, s, v):
                L_cont += -( (A1 - B1) + (A1 - C1))
        return L_cont/len(t)
 
-optimizer_F = torch.optim.Adam(f.parameters(), betas=[0.9, 0.999])
-optimizer_F_tilde = torch.optim.Adam(f_tilde.parameters(), betas=[0.9, 0.999])
+
+def calculate_validation_loss():
+   t = f(torch.tensor(test_x['input_ids']).to(device))
+   s = f_tilde(torch.tensor(test_x_tilde['input_ids']).to(device))
+   v = 1
+   loss = ntxent(t, s, v)
+   return loss
+
+
+
+optimizer_F = torch.optim.Adam(f.parameters(), betas=[0.9, 0.999], lr=0.00001)
+optimizer_F_tilde = torch.optim.Adam(f_tilde.parameters(), betas=[0.9, 0.999], lr=0.00001)
 
 
 n_epochs = 100    # number of epochs to run
 
 #batch size needs to align with len of composer data (so shuffling cannot produce wrong pairing)
-batch_size = 20  # size of each batch
+batch_size = 8  # size of each batch
 batches_per_epoch = len(data_x) // batch_size
 
 device = 'cpu'
 
-if torch.cuda.is_available:
-   device = 'cuda'
+# if torch.cuda.is_available:
+#    device = 'cuda'
 
 f = f.to(device)
 f_tilde = f_tilde.to(device)
@@ -196,8 +182,8 @@ for i in range(n_epochs):
     X_tilde_batch = data_x_tilde[start:start+batch_size]
 
     #shuffle batch for random pairing
-    random.shuffle(X_batch)
-    random.shuffle(X_tilde_batch)
+    #random.shuffle(X_batch)
+    #random.shuffle(X_tilde_batch)
 
     #TODO: test custom training loop with optimizing two models with one combined loss
     t = f(torch.tensor(X_batch['input_ids']).to(device))
@@ -206,9 +192,8 @@ for i in range(n_epochs):
     v = 1
     loss = ntxent(t, s, v)
 
-    #TODO: add L1 (?) Regularization
-    l = 0.05
-    loss = loss + l * calculate_regularizer()
+    #l = 0.05
+    #loss = loss + l * calculate_regularizer()
     
 
     loss.backward()
@@ -229,10 +214,11 @@ for i in range(n_epochs):
     optimizer_F.step()
     optimizer_F_tilde.step()
 
-    
+    print("LOSS: ", loss)
+    print("VALIDATION LOSS: ", calculate_validation_loss())
     print("BATCH " + str(j) + " FINISHED")
   print("STEP " + str(i) + " FINISHED")
 
 
-f.save_pretrained('checkpoint_attribute_f')
-f_tilde.save_pretrained('checkpoint_attribute_f_tilde')
+#f.save('checkpoint_attribute_f')
+#f_tilde.save_pretrained('checkpoint_attribute_f_tilde')
