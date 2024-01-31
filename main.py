@@ -6,6 +6,7 @@ from copy import deepcopy
 import json
 import sklearn
 import torch
+import datasets
 
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
@@ -27,45 +28,62 @@ TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 from AttributionHead import AttributionHead
 
 
-model = AttributionHead("checkpoints/checkpoint-20000")
+f = AttributionHead("checkpoints/checkpoint-22500_new_basemodel")
+f_tilde = AttributionHead("checkpoints/checkpoint-22500_new_basemodel")
 
-model.load('test/head')
+f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
+f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
+
+tokenizer = gpt2_composer.load_tokenizer("")
+
+# load dataset
+data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt", "test_generated": "DATA/attribution_generated_old.txt", "test_input": "DATA/attribution_input_old.txt"}
+dataset = datasets.load_dataset("text", data_files=data_files)
+tokenizer.enable_padding(length=512)
+
+def tokenize_function(examples):
+    outputs = tokenizer.encode_batch(examples["text"])
+    example = {
+        "input_ids": [c.ids for c in outputs]
+    }
+    # The 🤗 Transformers library apply the shifting to the right, so we don't need to do it manually.
+    #example["labels"] = example["input_ids"].copy()
+
+    #example["x"] = example["train"].copy()
+    #example["x^~"] = example["generated"].copy()
+    return example
 
 
+tokenized_datasets = dataset.map(
+    tokenize_function, batched=True, remove_columns=["text"])
+data_x = tokenized_datasets["input"]
+data_x_tilde = tokenized_datasets["generated"]
 
+device = 'cpu'
 
+def ntxent(t, s, v):
+       #iterate over all is
+       L_cont = 0
+       for i in range(len(t)):
+  
+            # compute NTXENT Loss
+            A = torch.dot(t[i], s[i]) / v
+            B = torch.matmul(t[i], s.transpose(0,1)) / v
+            C = torch.matmul(t, s[i]) / v
 
-
-
-
-
-
-
-
-
-# similarity_scores:  [659232.6, 491974.1, 425067.06, 272199.44, 544362.1, 323409.12, 472035.25, 303624.7, 557990.1, 491712.9, 227400.45, 351568.06, 477384.62, 323115.4, 555855.44, 337630.12]
-# similarity_scores sorted:  [659232.6  557990.1  555855.44 544362.1  491974.1  491712.9  477384.62
-#  472035.25 425067.06 351568.06 337630.12 323409.12 323115.4  303624.7
-#  272199.44 227400.45]
-# P: tensor([0.1121, 0.0592, 0.0592, 0.0592, 0.0592, 0.0592, 0.0592, 0.0592, 0.0592,
-#         0.0592, 0.0592, 0.0592, 0.0592, 0.0592, 0.0592, 0.0592],
-#        dtype=torch.float64)
-
-# sorted = np.array([659232.6,  557990.1,  555855.44, 544362.1,  491974.1,  491712.9, 477384.62 ,472035.25, 425067.06, 351568.06, 337630.12, 323409.12, 323115.4,  303624.7, 272199.44, 227400.45])
-
-# n = torch.relu(torch.exp(torch.tensor(557990.1 - sorted[0])/1) - 0)
-# print("n", n)        
-# A = torch.exp( torch.tensor((sorted - sorted[0]))/1 )
-# print("A", A) 
-# B =  A - 0
-# d = torch.sum(B)
-# print("d", d) 
         
-# P = n / d
+            A1 = A
+            B1 = torch.logsumexp(B, dim=0)
+            C1 = torch.logsumexp(C, dim=0)
 
-# print("P", P) 
+            L_cont += -( (A1 - B1) + (A1 - C1))
+          
+       return L_cont/len(t)
 
 
-# print(F.softplus(torch.tensor(0.)))
+t = f(torch.tensor(data_x['input_ids']).to(device))
+s = f_tilde(torch.tensor(data_x_tilde['input_ids']).to(device))
 
-# print(F.softplus(torch.tensor(1.)))
+loss = ntxent(t, s, 1)
+
+print(loss)

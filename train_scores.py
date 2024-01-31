@@ -16,11 +16,16 @@ import math
 #load model
 
 tokenizer = gpt2_composer.load_tokenizer("")
+tokenizer.enable_padding(length=512)
 f = AttributionHead.from_pretrained('checkpoint_attribute_f')
 f_tilde = AttributionHead.from_pretrained('checkpoint_attribute_f_tilde')
 
+
+f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
+f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
+
 #load data 
-data_files = {"generated": "DATA/attribution_generated.txt", "input": "DATA/attribution_input.txt"}
+data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt"}
 dataset = datasets.load_dataset("text", data_files=data_files)
 
 
