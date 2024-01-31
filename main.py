@@ -25,65 +25,20 @@ DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
 TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 #midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
 
-from AttributionHead import AttributionHead
+# S tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000, 0.0000,
+#         0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000],
+#        dtype=torch.float64)
+# P tensor([0.0729, 0.0538, 0.0430, 0.0805, 0.0662, 0.0673, 0.0588, 0.0621, 0.0726,
+#         0.0558, 0.0646, 0.0628, 0.0580, 0.0609, 0.0609, 0.0597],
+#        dtype=torch.float64, grad_fn=<CopySlices>)
+# kl: tensor(-0.1765, dtype=torch.float64, grad_fn=<KlDivBackward0>)
+
+a2 = torch.Tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000, 0.0000,0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000])
+a1 = torch.Tensor([0.0729, 0.0538, 0.0430, 0.0805, 0.0662, 0.0673, 0.0588, 0.0621, 0.0726,0.0558, 0.0646, 0.0628, 0.0580, 0.0609, 0.0609, 0.0597])
+
+print(sum(a1))
 
 
-f = AttributionHead("checkpoints/checkpoint-22500_new_basemodel")
-f_tilde = AttributionHead("checkpoints/checkpoint-22500_new_basemodel")
+c1 = F.kl_div(a2.log(), a1)
 
-f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
-f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
-
-tokenizer = gpt2_composer.load_tokenizer("")
-
-# load dataset
-data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt", "test_generated": "DATA/attribution_generated_old.txt", "test_input": "DATA/attribution_input_old.txt"}
-dataset = datasets.load_dataset("text", data_files=data_files)
-tokenizer.enable_padding(length=512)
-
-def tokenize_function(examples):
-    outputs = tokenizer.encode_batch(examples["text"])
-    example = {
-        "input_ids": [c.ids for c in outputs]
-    }
-    # The 🤗 Transformers library apply the shifting to the right, so we don't need to do it manually.
-    #example["labels"] = example["input_ids"].copy()
-
-    #example["x"] = example["train"].copy()
-    #example["x^~"] = example["generated"].copy()
-    return example
-
-
-tokenized_datasets = dataset.map(
-    tokenize_function, batched=True, remove_columns=["text"])
-data_x = tokenized_datasets["input"]
-data_x_tilde = tokenized_datasets["generated"]
-
-device = 'cpu'
-
-def ntxent(t, s, v):
-       #iterate over all is
-       L_cont = 0
-       for i in range(len(t)):
-  
-            # compute NTXENT Loss
-            A = torch.dot(t[i], s[i]) / v
-            B = torch.matmul(t[i], s.transpose(0,1)) / v
-            C = torch.matmul(t, s[i]) / v
-
-        
-            A1 = A
-            B1 = torch.logsumexp(B, dim=0)
-            C1 = torch.logsumexp(C, dim=0)
-
-            L_cont += -( (A1 - B1) + (A1 - C1))
-          
-       return L_cont/len(t)
-
-
-t = f(torch.tensor(data_x['input_ids']).to(device))
-s = f_tilde(torch.tensor(data_x_tilde['input_ids']).to(device))
-
-loss = ntxent(t, s, 1)
-
-print(loss)
+print(c1 )

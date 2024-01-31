@@ -11,21 +11,22 @@ import torch.nn.functional as F
 from transformers import Trainer
 import random
 from AttributionHead import AttributionHead
+from ProbabilityScore import ProbabilityScore
 import math
 
 #load model
 
 tokenizer = gpt2_composer.load_tokenizer("")
 tokenizer.enable_padding(length=512)
-f = AttributionHead.from_pretrained('checkpoint_attribute_f')
-f_tilde = AttributionHead.from_pretrained('checkpoint_attribute_f_tilde')
+f = AttributionHead("checkpoints/checkpoint-22500")
+f_tilde = AttributionHead("checkpoints/checkpoint-22500")
 
 
 f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
 f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
 
 #load data 
-data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt"}
+data_files = {"generated": "DATA/attribution_generated.txt", "input": "DATA/attribution_input.txt"}
 dataset = datasets.load_dataset("text", data_files=data_files)
 
 
@@ -145,42 +146,24 @@ def klLoss(input, target):
         #print("P", P)
         #calculate kl difference
         #TODO: test order ( P, S)
-        kl = F.kl_div(S, P)
+        #BEWARE: target in kl div shall be in log probs
+        kl = F.kl_div(P.log(), S)
         #print("kl:", kl)
         expectation_value = expectation_value + kl
-    print("expectation_value", expectation_value / len(datapairs))
+    #print("expectation_value", expectation_value / len(datapairs))
     return expectation_value / len(datapairs)
 
-class ProbabilityScore(torch.nn.Module):
-  def __init__(self):
-    super().__init__()
-    self.tau = torch.nn.Parameter(torch.Tensor([1.0]))
-    self.lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
 
-  def forward(self, similarity_scores):
-    P = torch.tensor(np.ones(len(similarity_scores)))
-           
-    for i in range(len(similarity_scores)):
-        sorted = np.flip(np.sort(similarity_scores))
-        n = F.softplus(torch.exp(torch.tensor(similarity_scores[i] - sorted[0])/self.tau) - self.lámbda)
-                       
-        A = torch.exp( torch.tensor((sorted - sorted[0]))/self.tau )
-        B = F.softplus( A- self.lámbda)
-        d = torch.sum(B)
-                       
-        P[i] = n / d
-
-    return P
 
 model = ProbabilityScore()
 # tau = torch.nn.Parameter(torch.Tensor([1.0]))
 # lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
 #TODO: does this work??
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(model.parameters(), lr=0.3)
 
 
 #training loop
-steps = 10
+steps = 1000
 print("Start TRAINING!!")
 print("lámbda", model.lámbda)
 print("tau", model.tau)
@@ -193,9 +176,9 @@ for i in range(steps):
     optimizer.step()
 
     optimizer.zero_grad()
-
-    print("STEP ", str(i), "Finished!!")
-    print("LOSS: ", loss)
+    if i % 100 == 0:
+        print("STEP ", str(i), "Finished!!")
+        print("LOSS: ", loss)
     #print("lámbda", model.lámbda)
     #print("tau", model.tau)
 

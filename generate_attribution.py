@@ -14,8 +14,8 @@ tokenizer = gpt2_composer.load_tokenizer("")
 
 #TODO: WHY IS PADDING SO IMPOORTANT????? ARGHHHHH
 tokenizer.enable_padding(length=512)
-f = AttributionHead("checkpoints/checkpoint-22500_new_basemodel")
-f_tilde = AttributionHead("checkpoints/checkpoint-22500_new_basemodel")
+f = AttributionHead("checkpoints/checkpoint-22500")
+f_tilde = AttributionHead("checkpoints/checkpoint-22500")
 
 
 f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
