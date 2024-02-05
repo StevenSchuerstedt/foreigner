@@ -12,7 +12,7 @@ from AttributionHead import AttributionHead
 
 tokenizer = gpt2_composer.load_tokenizer("")
 
-#TODO: WHY IS PADDING SO IMPOORTANT????? ARGHHHHH
+#TODO: PADDING IMPOORTANT
 tokenizer.enable_padding(length=512)
 f = AttributionHead("checkpoints/checkpoint-22500")
 f_tilde = AttributionHead("checkpoints/checkpoint-22500")
@@ -33,6 +33,8 @@ for i in range(8):
   x = dataset['input'][i]['text']
 
   input_ids_x_tilde = torch.tensor([tokenizer.encode(x_tilde).ids])
+
+
   input_ids_x = torch.tensor([tokenizer.encode(x).ids])
 
   feature_vec_x = f(input_ids_x)

@@ -86,6 +86,6 @@ for i in range(8):
 model = ProbabilityScore()
 
 scores = model(torch.tensor(s))
-
+print(s)
 print(x_tilde_index)
 print(scores * 100)

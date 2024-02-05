@@ -38,14 +38,20 @@ TOKENS_GENERATED_PATH = os.path.join(dirname, 'output\\attribution')
 #       txt_file.write(token_string + "\n")
 
 
+for composer in composers:
+  txt_files = glob.glob(os.path.join(TOKENS_GENERATED_PATH, composer + "_*.txt"))
+  with open("DATA/attribution/generated/generated_" + composer + ".txt", "w") as f2:
+    for fn_txt in tqdm(txt_files):
+      with open(fn_txt, "r") as f1:
+        f2.write(f1.read() + '\n')
+  
 
+# txt_files = glob.glob(os.path.join(TOKENS_GENERATED_PATH, "*.txt"))
 
-txt_files = glob.glob(os.path.join(TOKENS_GENERATED_PATH, "*.txt"))
-
-with open("DATA/attribution_generated.txt", "w") as f2:
-  for fn_txt in tqdm(txt_files):
-    with open(fn_txt, "r") as f1:
-      f2.write(f1.read() + '\n')
+# with open("DATA/attribution_generated.txt", "w") as f2:
+#   for fn_txt in tqdm(txt_files):
+#     with open(fn_txt, "r") as f1:
+#       f2.write(f1.read() + '\n')
 
 # txt_files = glob.glob(os.path.join(TOKENS_PATH, "*.txt"))
 # # train test split

@@ -21,6 +21,12 @@ import gpt2_composer
 
 composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
 
+data_files = {"input": "DATA/data.json"}
+dataset = datasets.load_dataset("json", data_files=data_files)
+
+print(dataset['input']['bach'][1])
+
+
 DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
 TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 #midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
@@ -33,12 +39,10 @@ TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 #        dtype=torch.float64, grad_fn=<CopySlices>)
 # kl: tensor(-0.1765, dtype=torch.float64, grad_fn=<KlDivBackward0>)
 
-a2 = torch.Tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000, 0.0000,0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.5000, 0.0000])
-a1 = torch.Tensor([0.0729, 0.0538, 0.0430, 0.0805, 0.0662, 0.0673, 0.0588, 0.0621, 0.0726,0.0558, 0.0646, 0.0628, 0.0580, 0.0609, 0.0609, 0.0597])
+f = ['hu', 'ha']
+d = {}
 
-print(sum(a1))
+for i in f:
+    d[i] = 'toll'
 
-
-c1 = F.kl_div(a2.log(), a1)
-
-print(c1 )
+print(d)

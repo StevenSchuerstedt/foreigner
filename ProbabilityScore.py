@@ -5,8 +5,8 @@ import numpy as np
 class ProbabilityScore(torch.nn.Module):
   def __init__(self):
     super().__init__()
-    self.tau = torch.nn.Parameter(torch.Tensor([-2.0798]))
-    self.lámbda = torch.nn.Parameter(torch.Tensor([1.6780]))
+    self.tau = torch.nn.Parameter(torch.Tensor([1.1741]))
+    self.lámbda = torch.nn.Parameter(torch.Tensor([-41.6009]))
 
   def forward(self, similarity_scores):
     P = torch.tensor(np.ones(len(similarity_scores)))

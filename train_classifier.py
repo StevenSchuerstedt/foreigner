@@ -13,9 +13,9 @@ from AttributionHead import AttributionHead
 
 
 tokenizer = gpt2_composer.load_tokenizer("")
-f = AttributionHead("checkpoints\checkpoint-20000")
+f = AttributionHead("checkpoints\checkpoint-22500")
 
-f_tilde = AttributionHead("checkpoints\checkpoint-20000")
+f_tilde = AttributionHead("checkpoints\checkpoint-22500")
 
 # padding needed?
 tokenizer.enable_padding(length=512)
@@ -25,13 +25,41 @@ tokenizer.enable_padding(length=512)
 # print(o.shape)
 
 # print(o)
-
+composers = ['bach',
+              'beethoven',
+                'chopin',
+                  'grieg',
+                    'haydn',
+                      'liszt',
+                        'mendelssohn',
+                          'rachmaninov']
 
 # load dataset
-data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt", "test_generated": "DATA/attribution_generated_old.txt", "test_input": "DATA/attribution_input_old.txt"}
+data_files = {
+    "generated_bach": "DATA/attribution/generated/generated_bach.txt",
+    "generated_beethoven": "DATA/attribution/generated/generated_beethoven.txt",
+    "generated_chopin": "DATA/attribution/generated/generated_chopin.txt",
+    "generated_grieg": "DATA/attribution/generated/generated_grieg.txt",
+    "generated_haydn": "DATA/attribution/generated/generated_haydn.txt",
+    "generated_liszt": "DATA/attribution/generated/generated_liszt.txt",
+    "generated_mendelssohn": "DATA/attribution/generated/generated_mendelssohn.txt",
+    "generated_rachmaninov": "DATA/attribution/generated/generated_rachmaninov.txt",
+
+    "input_bach": "DATA/attribution/input/input_bach.txt",
+    #"input_beethoven": "DATA/attribution/input/input_beethoven.txt",
+    #"input_chopin": "DATA/attribution/input/input_chopin.txt",
+    "input_grieg": "DATA/attribution/input/input_grieg.txt",
+    "input_haydn": "DATA/attribution/input/input_haydn.txt",
+    "input_liszt": "DATA/attribution/input/input_liszt.txt",
+    "input_mendelssohn": "DATA/attribution/input/input_mendelssohn.txt",
+    "input_rachmaninov": "DATA/attribution/input/input_rachmaninov.txt",
+
+    "test_generated": "DATA/attribution_generated_old.txt",
+    "test_input": "DATA/attribution_input_old.txt"
+
+          }
 dataset = datasets.load_dataset("text", data_files=data_files)
 
-# load validation set
 
 
 
@@ -50,8 +78,10 @@ def tokenize_function(examples):
 
 tokenized_datasets = dataset.map(
     tokenize_function, batched=True, remove_columns=["text"])
-data_x = tokenized_datasets["input"]
-data_x_tilde = tokenized_datasets["generated"]
+
+
+# data_x = tokenized_datasets["input"]
+# data_x_tilde = tokenized_datasets["generated"]
 
 test_x = tokenized_datasets['test_input']
 test_x_tilde = tokenized_datasets['test_generated']
@@ -138,9 +168,8 @@ optimizer_F_tilde = torch.optim.Adam(f_tilde.parameters(), betas=[0.9, 0.999], l
 
 n_epochs = 100    # number of epochs to run
 
-#batch size needs to align with len of composer data (so shuffling cannot produce wrong pairing)
 batch_size = 8  # size of each batch
-batches_per_epoch = len(data_x) // batch_size
+batches_per_epoch = 100
 
 device = 'cpu'
 
@@ -178,22 +207,24 @@ for i in range(n_epochs):
 
     start = j * batch_size
     # take a batch
-    X_batch = data_x[start:start+batch_size]
-    X_tilde_batch = data_x_tilde[start:start+batch_size]
+    data_x = []
+    data_x_tilde = []
+    for composer in composers:
+      data_x.append(random.choice(tokenized_datasets['input_' + composer]['input_ids']))
+      data_x_tilde.append(random.choice(tokenized_datasets['generated_' + composer]['input_ids']))
+    X_batch = data_x
+    X_tilde_batch = data_x_tilde
 
-    #shuffle batch for random pairing
-    #random.shuffle(X_batch)
-    #random.shuffle(X_tilde_batch)
 
     #TODO: test custom training loop with optimizing two models with one combined loss
-    t = f(torch.tensor(X_batch['input_ids']).to(device))
-    s = f_tilde(torch.tensor(X_tilde_batch['input_ids']).to(device))
+    t = f(torch.tensor(X_batch).to(device))
+    s = f_tilde(torch.tensor(X_tilde_batch).to(device))
     #temperature
     v = 1
     loss = ntxent(t, s, v)
 
-    #l = 0.05
-    #loss = loss + l * calculate_regularizer()
+    l = 0.05
+    loss = loss + l * calculate_regularizer()
     
 
     loss.backward()
@@ -217,7 +248,7 @@ for i in range(n_epochs):
     print("LOSS: ", loss)
     print("VALIDATION LOSS: ", calculate_validation_loss())
     print("BATCH " + str(j) + " FINISHED")
-  print("STEP " + str(i) + " FINISHED")
+  print("EPOCH " + str(i) + " FINISHED")
 
 
 #f.save('checkpoint_attribute_f')

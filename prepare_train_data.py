@@ -3,6 +3,8 @@ import glob
 from copy import deepcopy
 import json
 import sklearn
+import json
+import pandas as pd
 
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
@@ -19,7 +21,7 @@ TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 #midi_files = glob.glob(os.path.join(DATASET_PATH, "*.mid"))
 
 
-
+dic = {}
 for composer in composers:
   midi_files = []
   # if composer == 'rachmaninov':
@@ -28,33 +30,40 @@ for composer in composers:
   midi_files.append(glob.glob(os.path.join(os.path.join(dirname, 'DATA\\' + composer), "*.mid")))
 
   midi_files = sum(midi_files, [])
-  count = 0
+  strr = []
   for fn_mid in tqdm(midi_files):
-    if count == 100:
-      break
-    fn_txt = os.path.join(TOKENS_PATH, os.path.splitext(os.path.basename(fn_mid))[0] + ".txt")
+    
     note_seq_examples = gpt2_composer.extract_4bar_sections(fn_mid)
+    for seq in note_seq_examples:
+      token_string = " ".join(gpt2_composer.note_sequence_to_token_sequence(seq))
+      strr.append(token_string)
 
-    with open(fn_txt, "w") as txt_file:
-     for seq in note_seq_examples:
-        if count == 100:
-          break
-        token_string = " ".join(gpt2_composer.note_sequence_to_token_sequence(seq))
-        txt_file.write(token_string + "\n")
-        count = count + 1
-  print(count)
+  items = ['Mango', 'Orange', 'Apple', 'Lemon']
+  file = open("DATA/attribution/input_" + composer + ".txt", "w")
+  for item in strr:
+	  file.write(item+"\n")
+  
+  #file.close()
 
 
+#print(dic)
 
-txt_files = glob.glob(os.path.join(TOKENS_PATH, "*.txt"))
+#txt_files = glob.glob(os.path.join(TOKENS_PATH, "*.txt"))
 # train test split
 #txt_files_train, txt_files_test = sklearn.model_selection.train_test_split(txt_files, test_size=0.1, random_state=42)
 
+# with open('data.json', 'w') as fp:
+#     json.dump(dic, fp, indent=4, sort_keys=False)
+
+
+#df = pd.DataFrame(data=dic)
+#df.to_csv('input.csv')
+
 # put txt files in large file
-with open("DATA/attribution_input.txt", "w") as f2:
-  for fn_txt in tqdm(txt_files):
-    with open(fn_txt, "r") as f1:
-      f2.write(f1.read())
+# with open("DATA/attribution_input.txt", "w") as f2:
+#   for fn_txt in tqdm(txt_files):
+#     with open(fn_txt, "r") as f1:
+#       f2.write(f1.read())
       
 # with open("DATA/test_-rachmaninov.txt", "w") as f2:
 #   for fn_txt in tqdm(txt_files_test):
