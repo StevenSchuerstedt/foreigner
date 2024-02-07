@@ -18,8 +18,8 @@ f = AttributionHead("checkpoints/checkpoint-22500")
 f_tilde = AttributionHead("checkpoints/checkpoint-22500")
 
 
-f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
-f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
+f.load("checkpoint_attribute/checkpoint_attribute_f", "checkpoint_attribute/transformer_f")
+f_tilde.load("checkpoint_attribute/checkpoint_attribute_f_tilde", "checkpoint_attribute/transformer_f_tilde")
 
 # load dataset
 data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt"}
@@ -33,12 +33,14 @@ for i in range(8):
   x = dataset['input'][i]['text']
 
   input_ids_x_tilde = torch.tensor([tokenizer.encode(x_tilde).ids])
+  attention_x_tilde = torch.tensor([tokenizer.encode(x_tilde).attention_mask])
 
 
   input_ids_x = torch.tensor([tokenizer.encode(x).ids])
+  attention_x = torch.tensor([tokenizer.encode(x).attention_mask])
 
-  feature_vec_x = f(input_ids_x)
-  feature_vec_x_tilde = f_tilde(input_ids_x_tilde)
+  feature_vec_x = f(input_ids_x, attention_x)
+  feature_vec_x_tilde = f_tilde(input_ids_x_tilde, attention_x_tilde)
 
   output_x_xtilde = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
 
@@ -50,7 +52,8 @@ for i in range(8):
     y = dataset['input'][j]['text']
 
     input_ids_y = torch.tensor([tokenizer.encode(y).ids])
-    feature_vec_y = f(input_ids_y)
+    attention_y = torch.tensor([tokenizer.encode(y).attention_mask])
+    feature_vec_y = f(input_ids_y, attention_y)
     output_y_xtilde = np.dot(feature_vec_y[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
     print("Score for: ", j)
     print(output_y_xtilde)

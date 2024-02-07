@@ -46,8 +46,8 @@ data_files = {
     "generated_rachmaninov": "DATA/attribution/generated/generated_rachmaninov.txt",
 
     "input_bach": "DATA/attribution/input/input_bach.txt",
-    #"input_beethoven": "DATA/attribution/input/input_beethoven.txt",
-    #"input_chopin": "DATA/attribution/input/input_chopin.txt",
+    "input_beethoven": "DATA/attribution/input/input_beethoven.txt",
+    "input_chopin": "DATA/attribution/input/input_chopin.txt",
     "input_grieg": "DATA/attribution/input/input_grieg.txt",
     "input_haydn": "DATA/attribution/input/input_haydn.txt",
     "input_liszt": "DATA/attribution/input/input_liszt.txt",
@@ -58,6 +58,7 @@ data_files = {
     "test_input": "DATA/attribution_input_old.txt"
 
           }
+
 dataset = datasets.load_dataset("text", data_files=data_files)
 
 
