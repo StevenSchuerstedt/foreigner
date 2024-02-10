@@ -12,11 +12,12 @@ from AttributionHead import AttributionHead
 
 tokenizer = gpt2_composer.load_tokenizer("")
 
-#TODO: PADDING IMPOORTANT
-tokenizer.enable_padding(length=512)
+
+
 f = AttributionHead("checkpoints/checkpoint-22500")
 f_tilde = AttributionHead("checkpoints/checkpoint-22500")
-
+#TODO: PADDING IMPOORTANT
+tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
 
 f.load("checkpoint_attribute/checkpoint_attribute_f", "checkpoint_attribute/transformer_f")
 f_tilde.load("checkpoint_attribute/checkpoint_attribute_f_tilde", "checkpoint_attribute/transformer_f_tilde")

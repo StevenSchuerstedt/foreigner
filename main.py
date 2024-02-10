@@ -32,51 +32,87 @@ DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
 TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 
 
+# load dataset
+data_files = {
 
+    "input_bach": "DATA/attribution/input/input_bach.txt",
+    "input_beethoven": "DATA/attribution/input/input_beethoven.txt",
+    "input_chopin": "DATA/attribution/input/input_chopin.txt",
+    "input_grieg": "DATA/attribution/input/input_grieg.txt",
+    "input_haydn": "DATA/attribution/input/input_haydn.txt",
+    "input_liszt": "DATA/attribution/input/input_liszt.txt",
+    "input_mendelssohn": "DATA/attribution/input/input_mendelssohn.txt",
+    "input_rachmaninov": "DATA/attribution/input/input_rachmaninov.txt",
 
+          }
 
+dataset = datasets.load_dataset("text", data_files=data_files)
 tokenizer = gpt2_composer.load_tokenizer("")
 
+def tokenize_function(examples):
+    outputs = tokenizer.encode_batch(examples["text"])
+    example = {
+        "input_ids": [c.ids for c in outputs]
+    }
 
-f = AttributionHead("checkpoints/checkpoint-22500")
-f_tilde = AttributionHead("checkpoints/checkpoint-22500")
-
-
-tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
-print(f.transformer.config.pad_token_id)
-
-#f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
-#f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
-
-# batched_ids = [
-#     [200, 200, 200],
-#     [200, 200]
-# ]
-
-# torch.tensor(batched_ids)
+    return example
 
 
-x = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76"
-y = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76 NOTE_ON=77 INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76 NOTE_ON=77"
-z = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76 TIME_DELTA=12 TIME_DELTA=12 TIME_DELTA=12"
+tokenized_datasets = dataset.map(
+    tokenize_function, batched=True, remove_columns=["text"])
 
-# print(tokenizer.encode(x).ids)
 
-# print(tokenizer.encode(x).ids)
+index = 0
 
-input_ids_x = torch.tensor([tokenizer.encode(x).ids,tokenizer.encode(y).ids, tokenizer.encode(z).ids ])
+#print(len(tokenized_datasets['input_bach'][1]['input_ids']))
 
-#input_ids_x = torch.tensor([tokenizer.encode(z).ids])
+for e in tokenized_datasets['input_rachmaninov']:
+    index += len(e['input_ids'])
+print(index)
 
-attention_x = torch.tensor([tokenizer.encode(x).attention_mask, tokenizer.encode(y).attention_mask, tokenizer.encode(z).attention_mask])
 
-#attention_x = torch.tensor([tokenizer.encode(z).attention_mask])
+# tokenizer = gpt2_composer.load_tokenizer("")
 
-print(x)
-print(input_ids_x)
-#print(tokenizer.encode(x).attention_mask)
 
-feature_vec_x = f(input_ids_x, attention_x)
+# f = AttributionHead("checkpoints/checkpoint-22500")
+# f_tilde = AttributionHead("checkpoints/checkpoint-22500")
 
-print(feature_vec_x)
-print(feature_vec_x.shape)
+
+# tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
+# print(f.transformer.config.pad_token_id)
+
+# #f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
+# #f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
+
+# # batched_ids = [
+# #     [200, 200, 200],
+# #     [200, 200]
+# # ]
+
+# # torch.tensor(batched_ids)
+
+
+# x = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76"
+# y = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76 NOTE_ON=77 INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76 NOTE_ON=77"
+# z = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=77 NOTE_ON=79 TIME_DELTA=12 NOTE_OFF=76 TIME_DELTA=12 TIME_DELTA=12 TIME_DELTA=12"
+
+# # print(tokenizer.encode(x).ids)
+
+# # print(tokenizer.encode(x).ids)
+
+# input_ids_x = torch.tensor([tokenizer.encode(x).ids,tokenizer.encode(y).ids, tokenizer.encode(z).ids ])
+
+# #input_ids_x = torch.tensor([tokenizer.encode(z).ids])
+
+# attention_x = torch.tensor([tokenizer.encode(x).attention_mask, tokenizer.encode(y).attention_mask, tokenizer.encode(z).attention_mask])
+
+# #attention_x = torch.tensor([tokenizer.encode(z).attention_mask])
+
+# print(x)
+# print(input_ids_x)
+# #print(tokenizer.encode(x).attention_mask)
+
+# feature_vec_x = f(input_ids_x, attention_x)
+
+# print(feature_vec_x)
+# print(feature_vec_x.shape)

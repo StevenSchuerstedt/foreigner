@@ -17,10 +17,10 @@ import math
 #load model
 
 tokenizer = gpt2_composer.load_tokenizer("")
-tokenizer.enable_padding(length=512)
+
 f = AttributionHead("checkpoints/checkpoint-22500")
 f_tilde = AttributionHead("checkpoints/checkpoint-22500")
-
+tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
 
 f.load("checkpoint_attribute/f", "checkpoint_attribute/transformer_f")
 f_tilde.load("checkpoint_attribute/f_tilde", "checkpoint_attribute/transformer_f_tilde")
@@ -90,4 +90,5 @@ model = ProbabilityScore()
 scores = model(torch.tensor(s))
 print(s)
 print(x_tilde_index)
+print(sum(scores))
 print(scores * 100)

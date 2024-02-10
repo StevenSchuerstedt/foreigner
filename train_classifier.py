@@ -18,7 +18,7 @@ f = AttributionHead("checkpoints\checkpoint-22500")
 f_tilde = AttributionHead("checkpoints\checkpoint-22500")
 
 # padding needed?
-tokenizer.enable_padding(length=512)
+tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
 
 
 # o = f(torch.tensor(tokenizer.encode("PIECE_START").ids))
