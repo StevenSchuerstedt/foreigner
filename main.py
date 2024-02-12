@@ -116,3 +116,12 @@ print(index)
 
 # print(feature_vec_x)
 # print(feature_vec_x.shape)
+
+
+
+#TODO:
+# - setup new training with train / test / validation 
+# - fix generate scores, softplus to relu
+# - try out bart for generation
+# - finish draft of main chapter in thesis 
+# - evaluate current attribute classifier on some data (beethoven, chopin leftover etc) generate new stuff and test

@@ -162,11 +162,14 @@ model = ProbabilityScore()
 # tau = torch.nn.Parameter(torch.Tensor([1.0]))
 # lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
 #TODO: does this work??
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam([
+    {'params': model.tau, 'lr': 0.5},
+    {'params': model.lámbda, 'lr': 0.0005}
+], lr=0.0001)
 
 
 #training loop
-steps = 1000
+steps = 3000
 print("Start TRAINING!!")
 print("lámbda", model.lámbda)
 print("tau", model.tau)
