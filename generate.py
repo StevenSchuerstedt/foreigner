@@ -47,5 +47,5 @@ for composer in composers:
     input_ids = torch.tensor([tokenizer.encode(primer).ids])
     generated_ids = model.to(device).generate(input_ids.to(device), max_length=512, temperature=1.0, do_sample=True)
     output = tokenizer.decode(np.array(generated_ids[0].to('cpu')))
-    with open("output/attribution/" + composer + "_" + str(i) + ".txt", "w") as f:
+    with open("output/attribution/" + composer + "_test_" + str(i) + ".txt", "w") as f:
       f.write(output)
