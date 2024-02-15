@@ -25,8 +25,34 @@ tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
 f.load("checkpoint_attribute/checkpoint_attribute_f", "checkpoint_attribute/transformer_f")
 f_tilde.load("checkpoint_attribute/checkpoint_attribute_f_tilde", "checkpoint_attribute/transformer_f_tilde")
 
-#load data 
-data_files = {"generated": "DATA/attribution_generated.txt", "input": "DATA/attribution_input.txt"}
+composers = ['bach',
+              'beethoven',
+                'chopin',
+                  'grieg',
+                    'haydn',
+                      'liszt',
+                        'mendelssohn',
+                          'rachmaninov']
+# load dataset
+data_files = {
+    "generated_bach": "DATA/attribution/generated/generated_bach.txt",
+    "generated_beethoven": "DATA/attribution/generated/generated_beethoven.txt",
+    "generated_chopin": "DATA/attribution/generated/generated_chopin.txt",
+    "generated_grieg": "DATA/attribution/generated/generated_grieg.txt",
+    "generated_haydn": "DATA/attribution/generated/generated_haydn.txt",
+    "generated_liszt": "DATA/attribution/generated/generated_liszt.txt",
+    "generated_mendelssohn": "DATA/attribution/generated/generated_mendelssohn.txt",
+    "generated_rachmaninov": "DATA/attribution/generated/generated_rachmaninov.txt",
+
+    "input_bach": "DATA/attribution/input/input_bach.txt",
+    "input_beethoven": "DATA/attribution/input/input_beethoven.txt",
+    "input_chopin": "DATA/attribution/input/input_chopin.txt",
+    "input_grieg": "DATA/attribution/input/input_grieg.txt",
+    "input_haydn": "DATA/attribution/input/input_haydn.txt",
+    "input_liszt": "DATA/attribution/input/input_liszt.txt",
+    "input_mendelssohn": "DATA/attribution/input/input_mendelssohn.txt",
+    "input_rachmaninov": "DATA/attribution/input/input_rachmaninov.txt"
+          }
 dataset = datasets.load_dataset("text", data_files=data_files)
 
 
@@ -46,8 +72,6 @@ def tokenize_function(examples):
 
 tokenized_datasets = dataset.map(
     tokenize_function, batched=True, remove_columns=["text"])
-data_x = tokenized_datasets["input"]
-data_x_tilde = tokenized_datasets["generated"]
 
 
 #start with only input data, generated data, x and x_tilde?? calculate s in loss function? or beforehand
@@ -56,7 +80,7 @@ datapairs = []
 
 for n in range(10):
 
-    x_tilde_index = random.choice(range(len(data_x_tilde)))
+    composer = random.choice(composers)
 
     x_tilde = data_x_tilde[x_tilde_index]
 
@@ -142,7 +166,8 @@ def klLoss(input, target):
                 S[index] = 1 / count_ground_truth
 
         #construct probabilites
-
+        #print("grounrd truth: ", S)
+        #print("sscores: ", datapair['similarity_scores'])
         P = model(datapair['similarity_scores'])
 
         #print("S", S)
@@ -161,7 +186,6 @@ def klLoss(input, target):
 model = ProbabilityScore()
 # tau = torch.nn.Parameter(torch.Tensor([1.0]))
 # lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
-#TODO: does this work??
 optimizer = torch.optim.Adam([
     {'params': model.tau, 'lr': 0.5},
     {'params': model.lámbda, 'lr': 0.0005}

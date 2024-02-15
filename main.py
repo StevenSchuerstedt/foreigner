@@ -121,7 +121,37 @@ print(index)
 
 #TODO:
 # - setup new training with train / test / validation 
-# - fix generate scores, softplus to relu
+# - fix generate scores, softplus to relu -> just use relu when training? similarity scores not always correct so training cannot work?
 # - try out bart for generation
-# - finish draft of main chapter in thesis 
+# - finish draft of main chapter in thesis -> jep 
 # - evaluate current attribute classifier on some data (beethoven, chopin leftover etc) generate new stuff and test
+
+#TODO: (14.02.2024)
+# - check similarity scores, should work but doesnt? => basis for probability calibration
+# - write new chapter for gpt2 for music in thesis (lets take time, because correction is too much work...will take long anyways)
+# - should retrain everything with pad token id?? dunno...
+# - ..TODO
+# - normalizing flows, model neu trainineren, auf einzelne composer condition kp
+
+
+#- Precision, False Negatives, True Positives etc, 4 Werte Berechnen
+# - confusion matrix
+
+# - future work kapitel (?) conditional flow matching
+
+#- ganzes stück von beethoven zusammen betrachten mit wahrscheinlichkeiten
+
+#- näher am paper schreiben
+
+#- noch mehr erklären, verständis der materie, NTXENT Loss, vergleich zu anderen loss, andere paper lesen
+#links, rechts 
+
+#kapitel contrastive loss 
+
+#vllt bessere Notation? statt x tilde, x+ 
+
+#gleichungen erklären
+
+#- vergleich wang paper bilder, zu transformer unterschied ausarbeiten
+
+#2methoden, resampling, loss ändern

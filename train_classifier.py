@@ -88,26 +88,12 @@ test_x = tokenized_datasets['test_input']
 test_x_tilde = tokenized_datasets['test_generated']
 
 
-#custom training loop to train two models (F and F_tilde) simultanously?
-# compute loss, depending on both models
-# call loss.backward to compute gradients for both models?
-# does this work? => I guess
-
 def ntxent(t, s, v):
        #iterate over all is
        L_cont = 0
        for i in range(len(t)):
             #t_i = F(x^+) => exemplar Set
             #s_i = F^~(x^~) => generated Example
-
-            #print(t[i])
-            # if(math.isnan(t[i][i].to('cpu').detach().numpy())):
-            #    print(t[i])
-            #    print("t[i] is nan")
-            # if(math.isnan(s[i][i].to('cpu').detach().numpy())):
-            #    print(s[i])
-            #    print("s[i] is nan")
-
 
             # compute NTXENT Loss
             A = torch.dot(t[i], s[i]) / v
@@ -121,36 +107,8 @@ def ntxent(t, s, v):
             B1 = torch.logsumexp(B, dim=0)
             C1 = torch.logsumexp(C, dim=0)
 
-            # if(math.isnan(C1.item())):
-            #    print(C1.item())
-            #    print("C1 is nan")
-
             L_cont += -( (A1 - B1) + (A1 - C1))
-            #L_cont += -(torch.log(numerator / denomerator) + torch.log(numerator / denomerator2))
 
-       return L_cont/len(t)
-
-def ntxent_version2(t, s, v):
-       #iterate over all is
-       L_cont = 0
-       #8 composers
-       for i in range(8):
-            #all data of one composer
-            for j in range(100):
-               #generate a bach
-               x_tilde = s[i * 100 + j]
-               x_plus = t[i * 100 + j]
-               A = torch.dot(x_plus, x_tilde)
-               B = torch.matmul(x_plus, t.transpose(0,1))
-               C = torch.matmul(t, x_tilde)
-
-               A1 = A
-               B1 = torch.logsumexp(B, dim=0)
-               C1 = torch.logsumexp(C, dim=0)
-
-              #TODO: count how many nan values, division by zero ?? how many nan in sum of logsumexp, in iterations
-
-               L_cont += -( (A1 - B1) + (A1 - C1))
        return L_cont/len(t)
 
 
