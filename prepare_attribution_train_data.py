@@ -39,8 +39,8 @@ TOKENS_GENERATED_PATH = os.path.join(dirname, 'output\\attribution')
 
 
 for composer in composers:
-  txt_files = glob.glob(os.path.join(TOKENS_GENERATED_PATH, composer + "_*.txt"))
-  with open("DATA/attribution/generated/generated_" + composer + ".txt", "w") as f2:
+  txt_files = glob.glob(os.path.join(TOKENS_GENERATED_PATH, composer + "_test_*.txt"))
+  with open("DATA/attribution/generated/generated_" + composer + "_test.txt", "w") as f2:
     for fn_txt in tqdm(txt_files):
       with open(fn_txt, "r") as f1:
         f2.write(f1.read() + '\n')

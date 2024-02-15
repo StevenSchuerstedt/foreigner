@@ -27,12 +27,13 @@ tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
 # print(o)
 composers = ['bach',
               'beethoven',
-                'chopin',
-                  'grieg',
-                    'haydn',
-                      'liszt',
-                        'mendelssohn',
-                          'rachmaninov']
+               # 'chopin',
+                 # 'grieg',
+                  #  'haydn',
+                  #    'liszt',
+                   #     'mendelssohn',
+                    #      'rachmaninov'
+                    ]
 
 # load dataset
 data_files = {
@@ -54,13 +55,26 @@ data_files = {
     "input_mendelssohn": "DATA/attribution/input/input_mendelssohn.txt",
     "input_rachmaninov": "DATA/attribution/input/input_rachmaninov.txt",
 
-    "test_generated": "DATA/attribution_generated_old.txt",
-    "test_input": "DATA/attribution_input_old.txt"
+    "generated_bach_test": "DATA/attribution/generated/generated_bach_test.txt",
+    "generated_beethoven_test": "DATA/attribution/generated/generated_beethoven_test.txt",
+    "generated_chopin_test": "DATA/attribution/generated/generated_chopin_test.txt",
+    "generated_grieg_test": "DATA/attribution/generated/generated_grieg_test.txt",
+    "generated_haydn_test": "DATA/attribution/generated/generated_haydn_test.txt",
+    "generated_liszt_test": "DATA/attribution/generated/generated_liszt_test.txt",
+    "generated_mendelssohn_test": "DATA/attribution/generated/generated_mendelssohn_test.txt",
+    "generated_rachmaninov_test": "DATA/attribution/generated/generated_rachmaninov_test.txt",
 
+    "input_bach_test": "DATA/attribution/input/input_bach_test.txt",
+    "input_beethoven_test": "DATA/attribution/input/input_beethoven_test.txt",
+    "input_chopin_test": "DATA/attribution/input/input_chopin_test.txt",
+    "input_grieg_test": "DATA/attribution/input/input_grieg_test.txt",
+    "input_haydn_test": "DATA/attribution/input/input_haydn_test.txt",
+    "input_liszt_test": "DATA/attribution/input/input_liszt_test.txt",
+    "input_mendelssohn_test": "DATA/attribution/input/input_mendelssohn_test.txt",
+    "input_rachmaninov_test": "DATA/attribution/input/input_rachmaninov_test.txt",
           }
 
 dataset = datasets.load_dataset("text", data_files=data_files)
-
 
 
 
@@ -83,9 +97,6 @@ tokenized_datasets = dataset.map(
 
 # data_x = tokenized_datasets["input"]
 # data_x_tilde = tokenized_datasets["generated"]
-
-test_x = tokenized_datasets['test_input']
-test_x_tilde = tokenized_datasets['test_generated']
 
 
 def ntxent(t, s, v):
