@@ -82,7 +82,7 @@ for n in range(10):
 
     composer = random.choice(composers)
 
-    x_tilde = data_x_tilde[x_tilde_index]
+    x_tilde = random.choice(tokenized_datasets['generated_' + composers])
 
     #print(x_tilde_index)
 
@@ -104,15 +104,20 @@ for n in range(10):
 
     for j in range(2):
         for i in range(8):
-            x_index = random.choice(range(100)) + i * 100 
-            input_ids_x = torch.tensor([data_x[x_index]['input_ids']])
-            attention_x = torch.tensor([data_x[x_index]['attention_mask']])
+
+           
+
+            composer_c = random.choice(composers)
+            x_index = random.choice(tokenized_datasets['input_' + composers])
+
+            input_ids_x = torch.tensor([x_index['input_ids']])
+            attention_x = torch.tensor([x_index['attention_mask']])
             feature_vec_x = f(input_ids_x, attention_x)
 
             similarity_score = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
         
             s.append(similarity_score)
-            if(math.floor(x_tilde_index / 100) == math.floor(x_index / 100)):
+            if(composer_c == composer):
                 t.append(1)
             else:
                 t.append(0)
@@ -121,7 +126,7 @@ for n in range(10):
 
     
 
-    datapair = {"x_tilde": x_tilde_index,
+    datapair = {"x_tilde": 0,
         "similarity_scores": s,
         "ground_truths": t
         }
