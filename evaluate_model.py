@@ -13,7 +13,7 @@ import random
 from AttributionHead import AttributionHead
 from ProbabilityScore import ProbabilityScore
 import math
-
+from tqdm.auto import tqdm
 #load model
 
 tokenizer = gpt2_composer.load_tokenizer("")
@@ -94,56 +94,94 @@ tokenized_datasets = {**tokenized_datasets, **tokenized_datasets2}
 #start with only input data, generated data, x and x_tilde?? calculate s in loss function? or beforehand
 
 
-#choose random composer
-composer = random.choice(composers)
-print(composer)
+#iterate over complete test set
+true_positive = {
+    'bach': 0,
+    'beethoven': 0,
+    'chopin': 0,
+    'grieg': 0,
+    'haydn': 0,
+    'liszt': 0,
+    'mendelssohn': 0,
+    'rachmaninov': 0,
+}
+false_positive = {
+    'bach': 0,
+    'beethoven': 0,
+    'chopin': 0,
+    'grieg': 0,
+    'haydn': 0,
+    'liszt': 0,
+    'mendelssohn': 0,
+    'rachmaninov': 0,
+}
 
-x_tilde = random.choice(tokenized_datasets['generated_' + composer])
+for composer in composers:
 
-#print(x_tilde_index)
+    print(composer)
 
-input_ids_x_tilde = torch.tensor([x_tilde['input_ids']])
-attention_x_tilde = torch.tensor([x_tilde['attention_mask']])
-#print(input_ids_x_tilde)
+   # index = 0
+    for x_tilde in tqdm(tokenized_datasets['generated_' + composer]):
 
+        #index = index + 1
+        #if index == 11:
+        #    break
+        #print(x_tilde_index)
 
-feature_vec_x_tilde = f_tilde(input_ids_x_tilde, attention_x_tilde)
-
-
-x_tilde2 = random.choice(tokenized_datasets['input_' + composer])
-
-#print(x_tilde_index)
-
-input_ids_x_tilde2 = torch.tensor([x_tilde2['input_ids']])
-attention_x_tilde2 = torch.tensor([x_tilde2['attention_mask']])
-#print(input_ids_x_tilde)
+        input_ids_x_tilde = torch.tensor([x_tilde['input_ids']])
+        attention_x_tilde = torch.tensor([x_tilde['attention_mask']])
+        #print(input_ids_x_tilde)
 
 
-feature_vec_x_tilde2 = f(input_ids_x_tilde2, attention_x_tilde2)
+        feature_vec_x_tilde = f_tilde(input_ids_x_tilde, attention_x_tilde)
 
-ground_truth = np.dot(feature_vec_x_tilde2[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
-#calculate similarity scores
-print("ground_truth: ", ground_truth)
-#list of similarit scores, => s = dot(F(x), F_tilde(x_tilde))
-s = [ground_truth]
 
-for c in composers:
-   # if c == composer:
-    #    continue
-    x = random.choice(tokenized_datasets['input_' + c])
-    input_ids_x = torch.tensor([x['input_ids']])
-    attention_x = torch.tensor([x['attention_mask']])
-    feature_vec_x = f(input_ids_x, attention_x)
+        #x_tilde2 = random.choice(tokenized_datasets['input_' + composer])
 
-    similarity_score = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
+        #print(x_tilde_index)
+
+        #input_ids_x_tilde2 = torch.tensor([x_tilde2['input_ids']])
+        #attention_x_tilde2 = torch.tensor([x_tilde2['attention_mask']])
+        #print(input_ids_x_tilde)
+
+
+        #feature_vec_x_tilde2 = f(input_ids_x_tilde2, attention_x_tilde2)
+
+        #ground_truth = np.dot(feature_vec_x_tilde2[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
+
+        #calculate similarity scores
+        #print("ground_truth: ", ground_truth)
+        #list of similarit scores, => s = dot(F(x), F_tilde(x_tilde))
+        #s = [ground_truth]
+        s = []
+        for c in composers:
+            #if c == composer:
+            #    continue
+
+            x = random.choice(tokenized_datasets['input_' + c])
+            input_ids_x = torch.tensor([x['input_ids']])
+            attention_x = torch.tensor([x['attention_mask']])
+            feature_vec_x = f(input_ids_x, attention_x)
+
+            similarity_score = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
+            s.append(similarity_score)
         
-    s.append(similarity_score)
-   
+        predicted_composer = composers[np.argmax(s)]
+        if predicted_composer == composer:
+            true_positive[composer] += 1
+        else:
+            false_positive[composer] += 1
 
+        #model = ProbabilityScore()
 
-model = ProbabilityScore()
+        #scores = model(torch.tensor(s))
+        #print(s)
+        #print(sum(scores))
+        #print(scores * 100)
+ 
 
-scores = model(torch.tensor(s))
-print(s)
-print(sum(scores))
-print(scores * 100)
+print("ERGEBNIS DER EVALUATION: ")
+
+print("true pos: ", true_positive)
+
+print("false neg: ", false_positive)

@@ -28,47 +28,47 @@ composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelss
 # print(dataset['input']['bach'][1])
 
 
-DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
-TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
+# DATASET_PATH = os.path.join(dirname, 'DATA\\chopin')
+# TOKENS_PATH = os.path.join(dirname, 'DATA\\TOKENS')
 
 
-# load dataset
-data_files = {
+# # load dataset
+# data_files = {
 
-    "input_bach": "DATA/attribution/input/input_bach.txt",
-    "input_beethoven": "DATA/attribution/input/input_beethoven.txt",
-    "input_chopin": "DATA/attribution/input/input_chopin.txt",
-    "input_grieg": "DATA/attribution/input/input_grieg.txt",
-    "input_haydn": "DATA/attribution/input/input_haydn.txt",
-    "input_liszt": "DATA/attribution/input/input_liszt.txt",
-    "input_mendelssohn": "DATA/attribution/input/input_mendelssohn.txt",
-    "input_rachmaninov": "DATA/attribution/input/input_rachmaninov.txt",
+#     "input_bach": "DATA/attribution/input/input_bach.txt",
+#     "input_beethoven": "DATA/attribution/input/input_beethoven.txt",
+#     "input_chopin": "DATA/attribution/input/input_chopin.txt",
+#     "input_grieg": "DATA/attribution/input/input_grieg.txt",
+#     "input_haydn": "DATA/attribution/input/input_haydn.txt",
+#     "input_liszt": "DATA/attribution/input/input_liszt.txt",
+#     "input_mendelssohn": "DATA/attribution/input/input_mendelssohn.txt",
+#     "input_rachmaninov": "DATA/attribution/input/input_rachmaninov.txt",
 
-          }
+#           }
 
-dataset = datasets.load_dataset("text", data_files=data_files)
-tokenizer = gpt2_composer.load_tokenizer("")
+# dataset = datasets.load_dataset("text", data_files=data_files)
+# tokenizer = gpt2_composer.load_tokenizer("")
 
-def tokenize_function(examples):
-    outputs = tokenizer.encode_batch(examples["text"])
-    example = {
-        "input_ids": [c.ids for c in outputs]
-    }
+# def tokenize_function(examples):
+#     outputs = tokenizer.encode_batch(examples["text"])
+#     example = {
+#         "input_ids": [c.ids for c in outputs]
+#     }
 
-    return example
-
-
-tokenized_datasets = dataset.map(
-    tokenize_function, batched=True, remove_columns=["text"])
+#     return example
 
 
-index = 0
+# tokenized_datasets = dataset.map(
+#     tokenize_function, batched=True, remove_columns=["text"])
 
-#print(len(tokenized_datasets['input_bach'][1]['input_ids']))
 
-for e in tokenized_datasets['input_rachmaninov']:
-    index += len(e['input_ids'])
-print(index)
+# index = 0
+
+# #print(len(tokenized_datasets['input_bach'][1]['input_ids']))
+
+# for e in tokenized_datasets['input_rachmaninov']:
+#     index += len(e['input_ids'])
+# print(index)
 
 
 # tokenizer = gpt2_composer.load_tokenizer("")
@@ -155,3 +155,11 @@ print(index)
 #- vergleich wang paper bilder, zu transformer unterschied ausarbeiten
 
 #2methoden, resampling, loss ändern
+
+
+
+# true pos:  {'bach': 99, 'beethoven': 63, 'chopin': 42, 'grieg': 82, 'haydn': 88, 'liszt': 82, 'mendelssohn': 85, 'rachmaninov': 79}
+# false neg:  {'bach': 1, 'beethoven': 37, 'chopin': 58, 'grieg': 18, 'haydn': 12, 'liszt': 18, 'mendelssohn': 15, 'rachmaninov': 21}
+
+
+print( (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79) / (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79 + 1 +37 + 58 + 18 + 12 + 18 + 15 + 21))

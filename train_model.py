@@ -4,11 +4,15 @@ import transformers
 import gpt2_composer
 
 # load dataset
-data_files = {"train": "DATA/train.txt", "test": "DATA/test.txt"}
+data_files = {"train": "DATA/base_train.txt", "test": "DATA/base_test.txt"}
 dataset = datasets.load_dataset("text", data_files=data_files)
 
 tokenizer = gpt2_composer.load_tokenizer("")
-tokenizer.enable_padding(length=512)
+
+# create empty model from config
+model = gpt2_composer.create_BERT_model("")
+
+tokenizer.enable_padding(length=512, pad_id=model.config.pad_token_id)
 
 
 def tokenize_function(examples):
@@ -26,8 +30,7 @@ tokenized_datasets = dataset.map(
 train_dataset = tokenized_datasets["train"]
 eval_dataset = tokenized_datasets["test"]
 
-# create empty model from config
-model = gpt2_composer.create_model("")
+
 
 # train
 training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=10000, save_steps=1000)
