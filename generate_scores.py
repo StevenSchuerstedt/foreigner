@@ -39,22 +39,22 @@ composers = ['bach',
 
 # load dataset
 data_files = {
-    "generated_bach": "DATA/attribution/generated/generated_bach_test.txt",
-    "generated_beethoven": "DATA/attribution/generated/generated_beethoven_test.txt",
-     "generated_chopin": "DATA/attribution/generated/generated_chopin_test.txt",
-     "generated_grieg": "DATA/attribution/generated/generated_grieg_test.txt",
-     "generated_haydn": "DATA/attribution/generated/generated_haydn_test.txt",
-     "generated_liszt": "DATA/attribution/generated/generated_liszt_test.txt",
-     "generated_mendelssohn": "DATA/attribution/generated/generated_mendelssohn_test.txt",
+    "generated_bach": "DATA/attribution/generated/generated_bach.txt",
+    "generated_beethoven": "DATA/attribution/generated/generated_beethoven.txt",
+     "generated_chopin": "DATA/attribution/generated/generated_chopin.txt",
+     "generated_grieg": "DATA/attribution/generated/generated_grieg.txt",
+     "generated_haydn": "DATA/attribution/generated/generated_haydn.txt",
+     "generated_liszt": "DATA/attribution/generated/generated_liszt.txt",
+     "generated_mendelssohn": "DATA/attribution/generated/generated_mendelssohn.txt",
      #"generated_rachmaninov": "DATA/attribution/generated/generated_rachmaninov.txt",
 
-    "input_bach": "DATA/attribution/input/input_bach_test.txt",
-    "input_beethoven": "DATA/attribution/input/input_beethoven_test.txt",
-     "input_chopin": "DATA/attribution/input/input_chopin_test.txt",
-     "input_grieg": "DATA/attribution/input/input_grieg_test.txt",
-     "input_haydn": "DATA/attribution/input/input_haydn_test.txt",
-     "input_liszt": "DATA/attribution/input/input_liszt_test.txt",
-     "input_mendelssohn": "DATA/attribution/input/input_mendelssohn_test.txt",
+    "input_bach": "DATA/attribution/input/input_bach.txt",
+    "input_beethoven": "DATA/attribution/input/input_beethoven.txt",
+     "input_chopin": "DATA/attribution/input/input_chopin.txt",
+     "input_grieg": "DATA/attribution/input/input_grieg.txt",
+     "input_haydn": "DATA/attribution/input/input_haydn.txt",
+     "input_liszt": "DATA/attribution/input/input_liszt.txt",
+     "input_mendelssohn": "DATA/attribution/input/input_mendelssohn.txt",
      #"input_rachmaninov": "DATA/attribution/input/input_rachmaninov_test.txt"
           }
 
@@ -80,8 +80,8 @@ tokenized_datasets = dataset.map(
 
 
 dataset = datasets.load_dataset("text", data_files={
-    "generated_rachmaninov": "DATA/attribution/generated/generated_rachmaninov_test.txt",
-    "input_rachmaninov": "DATA/attribution/input/input_rachmaninov_test.txt"
+    "generated_rachmaninov": "DATA/attribution/generated/generated_rachmaninov.txt",
+    "input_rachmaninov": "DATA/attribution/input/input_rachmaninov.txt"
     })
 tokenized_datasets2 = dataset.map(
     tokenize_function, batched=True, remove_columns=["text"])
@@ -130,14 +130,15 @@ s = [ground_truth]
 for c in composers:
    # if c == composer:
     #    continue
-    x = random.choice(tokenized_datasets['input_' + c])
-    input_ids_x = torch.tensor([x['input_ids']])
-    attention_x = torch.tensor([x['attention_mask']])
-    feature_vec_x = f(input_ids_x, attention_x)
+    for i in range(1):
+      x = random.choice(tokenized_datasets['input_' + c])
+      input_ids_x = torch.tensor([x['input_ids']])
+      attention_x = torch.tensor([x['attention_mask']])
+      feature_vec_x = f(input_ids_x, attention_x)
 
-    similarity_score = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
-        
-    s.append(similarity_score)
+      similarity_score = np.dot(feature_vec_x[0].detach().numpy(), feature_vec_x_tilde[0].detach().numpy())
+          
+      s.append(similarity_score)
    
 
 

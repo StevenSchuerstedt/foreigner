@@ -95,25 +95,87 @@ tokenized_datasets = {**tokenized_datasets, **tokenized_datasets2}
 
 
 #iterate over complete test set
-true_positive = {
-    'bach': 0,
-    'beethoven': 0,
-    'chopin': 0,
-    'grieg': 0,
-    'haydn': 0,
-    'liszt': 0,
-    'mendelssohn': 0,
-    'rachmaninov': 0,
-}
-false_positive = {
-    'bach': 0,
-    'beethoven': 0,
-    'chopin': 0,
-    'grieg': 0,
-    'haydn': 0,
-    'liszt': 0,
-    'mendelssohn': 0,
-    'rachmaninov': 0,
+data_list = {
+    'bach': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'beethoven': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'chopin': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'grieg': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'haydn': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'liszt': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'mendelssohn': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'rachmaninov': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
 }
 
 for composer in composers:
@@ -167,10 +229,7 @@ for composer in composers:
             s.append(similarity_score)
         
         predicted_composer = composers[np.argmax(s)]
-        if predicted_composer == composer:
-            true_positive[composer] += 1
-        else:
-            false_positive[composer] += 1
+        data_list[composer][predicted_composer] += 1
 
         #model = ProbabilityScore()
 
@@ -182,6 +241,4 @@ for composer in composers:
 
 print("ERGEBNIS DER EVALUATION: ")
 
-print("true pos: ", true_positive)
-
-print("false neg: ", false_positive)
+print("data_list: ", data_list)

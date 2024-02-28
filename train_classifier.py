@@ -4,6 +4,7 @@ import note_seq
 import transformers
 import torch
 import datasets
+from AttributionHeadBert import AttributionHeadBert
 import gpt2_composer
 from torch import nn
 from transformers import Trainer
@@ -13,9 +14,9 @@ from AttributionHead import AttributionHead
 
 
 tokenizer = gpt2_composer.load_tokenizer("")
-f = AttributionHead("checkpoints\checkpoint-22500")
+f = AttributionHeadBert("checkpoint_bert\checkpoint-22500")
 
-f_tilde = AttributionHead("checkpoints\checkpoint-22500")
+f_tilde = AttributionHeadBert("checkpoint_bert\checkpoint-22500")
 
 # padding needed?
 tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)

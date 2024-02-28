@@ -22,6 +22,30 @@ import gpt2_composer
 
 composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
 
+
+
+# from transformers import AutoTokenizer, BertModel
+# import torch
+
+# tokenizer = gpt2_composer.load_tokenizer("")
+# model = BertModel.from_pretrained("checkpoint_bert/checkpoint-22500")
+# #tokenizer.enable_padding(length=512, pad_id=model.config.pad_token_id)
+# primer = "PIECE_START TRACK_START INST=0 BAR_START NOTE_ON=44 NOTE_ON=44 NOTE_ON=47 NOTE_ON=50"
+
+# input_ids = torch.tensor([tokenizer.encode(primer).ids])
+
+# print(input_ids)
+
+# generated_ids = model(input_ids)
+
+
+# print(generated_ids.last_hidden_state[0][-1])
+# print(generated_ids.last_hidden_state.shape)
+
+#last_hidden_states = outputs.last_hidden_state
+
+#print(outputs[1])
+
 # data_files = {"input": "DATA/data.json"}
 # dataset = datasets.load_dataset("json", data_files=data_files)
 
@@ -162,4 +186,104 @@ composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelss
 # false neg:  {'bach': 1, 'beethoven': 37, 'chopin': 58, 'grieg': 18, 'haydn': 12, 'liszt': 18, 'mendelssohn': 15, 'rachmaninov': 21}
 
 
-print( (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79) / (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79 + 1 +37 + 58 + 18 + 12 + 18 + 15 + 21))
+#print( (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79) / (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79 + 1 +37 + 58 + 18 + 12 + 18 + 15 + 21))
+
+
+data_count = {
+    'bach': 0,
+    'beethoven': 0,
+    'chopin': 0,
+    'grieg': 0,
+    'haydn': 0,
+    'liszt': 0,
+    'mendelssohn': 0,
+    'rachmaninov': 0,
+}
+
+data_list = {
+    'bach': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'beethoven': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'chopin': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'grieg': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'haydn': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'liszt': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'mendelssohn': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+    'rachmaninov': {
+        'bach': 0,
+        'beethoven': 0,
+        'chopin': 0,
+        'grieg': 0,
+        'haydn': 0,
+        'liszt': 0,
+        'mendelssohn': 0,
+        'rachmaninov': 0,
+    },
+}
+
+data_list['bach']['bach'] += 1
+
+data_list['rachmaninov']['liszt'] += 1
+print(data_list)

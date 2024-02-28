@@ -9,7 +9,8 @@ class ProbabilityScore(torch.nn.Module):
     #self.lámbda = torch.nn.Parameter(torch.Tensor([0.0]))
 
     self.tau = torch.nn.Parameter(torch.Tensor([2.3151]))
-    self.lámbda = torch.nn.Parameter(torch.Tensor([-0.0030]))
+    self.lámbda = torch.nn.Parameter(torch.Tensor([0.2030]))
+    #increase lambda to move to 0 when low
 
     #-38.3947
     #8.2753
