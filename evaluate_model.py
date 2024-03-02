@@ -1,7 +1,6 @@
 import copy
 from typing import Optional
 import numpy as np
-import note_seq
 import transformers
 import torch
 import datasets
@@ -14,7 +13,7 @@ from AttributionHead import AttributionHead
 from ProbabilityScore import ProbabilityScore
 import math
 from tqdm.auto import tqdm
-#load model
+#load modelp
 
 tokenizer = gpt2_composer.load_tokenizer("")
 

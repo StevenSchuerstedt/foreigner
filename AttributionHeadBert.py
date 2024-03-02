@@ -55,7 +55,7 @@ class AttributionHeadBert(nn.Module):
   
   def save(self, path, path2):
     torch.save(self.attribution_head, path)
-    self.transformer.save(path2)
+    self.transformer.save_pretrained(path2)
 
   def load(self, path, path2):
     self.attribution_head = torch.load(path, map_location=torch.device('cpu'))

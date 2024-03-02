@@ -15,6 +15,7 @@ import math
 import note_seq
 import torch.nn.functional as F
 from AttributionHead import AttributionHead
+from AttributionHeadBert import AttributionHeadBert
 
 dirname = os.path.dirname(__file__)
 
@@ -23,6 +24,18 @@ import gpt2_composer
 composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelssohn', 'rachmaninov']
 
 
+
+tokenizer = gpt2_composer.load_tokenizer("")
+f = AttributionHeadBert("checkpoints/checkpoint-22500")
+
+f_tilde = AttributionHeadBert("checkpoints/checkpoint-22500")
+
+# padding needed?
+tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
+
+
+f.save('checkpoint_attribute_bert/checkpoint_attribute_f', 'checkpoint_attribute_bert/checkpoint_trans_f')
+f_tilde.save('checkpoint_attribute_bert/checkpoint_attribute_f_tilde', 'checkpoint_attribute_bert/checkpoint_trans_f_tilde')
 
 # from transformers import AutoTokenizer, BertModel
 # import torch
@@ -179,111 +192,3 @@ composers = ['bach', 'beethoven', 'chopin', 'grieg', 'haydn', 'liszt', 'mendelss
 #- vergleich wang paper bilder, zu transformer unterschied ausarbeiten
 
 #2methoden, resampling, loss ändern
-
-
-
-# true pos:  {'bach': 99, 'beethoven': 63, 'chopin': 42, 'grieg': 82, 'haydn': 88, 'liszt': 82, 'mendelssohn': 85, 'rachmaninov': 79}
-# false neg:  {'bach': 1, 'beethoven': 37, 'chopin': 58, 'grieg': 18, 'haydn': 12, 'liszt': 18, 'mendelssohn': 15, 'rachmaninov': 21}
-
-
-#print( (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79) / (99 + 63 + 42 + 82 + 88 + 82 + 85 + 79 + 1 +37 + 58 + 18 + 12 + 18 + 15 + 21))
-
-
-data_count = {
-    'bach': 0,
-    'beethoven': 0,
-    'chopin': 0,
-    'grieg': 0,
-    'haydn': 0,
-    'liszt': 0,
-    'mendelssohn': 0,
-    'rachmaninov': 0,
-}
-
-data_list = {
-    'bach': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-    'beethoven': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-    'chopin': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-    'grieg': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-    'haydn': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-    'liszt': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-    'mendelssohn': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-    'rachmaninov': {
-        'bach': 0,
-        'beethoven': 0,
-        'chopin': 0,
-        'grieg': 0,
-        'haydn': 0,
-        'liszt': 0,
-        'mendelssohn': 0,
-        'rachmaninov': 0,
-    },
-}
-
-data_list['bach']['bach'] += 1
-
-data_list['rachmaninov']['liszt'] += 1
-print(data_list)

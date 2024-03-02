@@ -15,6 +15,7 @@ def extract_4bar_sections(fn_mid):
     try:
         seq = note_seq.midi_file_to_note_sequence(fn_mid)
     except note_seq.MIDIConversionError:
+        print("error")
         return note_seq_examples
 
     #seq = note_seq.midi_file_to_note_sequence(fn_mid)
