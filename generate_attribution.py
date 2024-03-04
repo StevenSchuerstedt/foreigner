@@ -4,6 +4,7 @@ import transformers
 import datasets
 import torch
 from typing import Optional
+from AttributionHeadBert import AttributionHeadBert
 
 import gpt2_composer
 
@@ -14,13 +15,13 @@ tokenizer = gpt2_composer.load_tokenizer("")
 
 
 
-f = AttributionHead("checkpoints/checkpoint-22500")
-f_tilde = AttributionHead("checkpoints/checkpoint-22500")
+f = AttributionHeadBert("checkpoints/checkpoint-22500")
+f_tilde = AttributionHeadBert("checkpoints/checkpoint-22500")
 #TODO: PADDING IMPOORTANT
 tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
 
-f.load("checkpoint_attribute/checkpoint_attribute_f", "checkpoint_attribute/transformer_f")
-f_tilde.load("checkpoint_attribute/checkpoint_attribute_f_tilde", "checkpoint_attribute/transformer_f_tilde")
+f.load("checkpoint_bert/checkpoint_attribute_f", "checkpoint_bert/transformer_f")
+f_tilde.load("checkpoint_bert/checkpoint_attribute_f_tilde", "checkpoint_bert/transformer_f_tilde")
 
 # load dataset
 data_files = {"generated": "DATA/attribution_generated_old.txt", "input": "DATA/attribution_input_old.txt"}

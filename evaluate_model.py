@@ -21,8 +21,8 @@ f = AttributionHead("checkpoints/checkpoint-22500")
 f_tilde = AttributionHead("checkpoints/checkpoint-22500")
 tokenizer.enable_padding(length=512, pad_id=f.transformer.config.pad_token_id)
 
-f.load("checkpoint_attribute/checkpoint_attribute_f", "checkpoint_attribute/transformer_f")
-f_tilde.load("checkpoint_attribute/checkpoint_attribute_f_tilde", "checkpoint_attribute/transformer_f_tilde")
+f.load("checkpoint_bert/checkpoint_attribute_f", "checkpoint_bert/transformer_f")
+f_tilde.load("checkpoint_bert/checkpoint_attribute_f_tilde", "checkpoint_bert/transformer_f_tilde")
 
 #load data 
 
@@ -92,6 +92,10 @@ tokenized_datasets = {**tokenized_datasets, **tokenized_datasets2}
 
 #start with only input data, generated data, x and x_tilde?? calculate s in loss function? or beforehand
 
+
+#for bert very beed
+
+#data_list:  {'bach': {'bach': 9, 'beethoven': 3, 'chopin': 9, 'grieg': 21, 'haydn': 15, 'liszt': 5, 'mendelssohn': 13, 'rachmaninov': 25}, 'beethoven': {'bach': 1, 'beethoven': 8, 'chopin': 24, 'grieg': 13, 'haydn': 5, 'liszt': 3, 'mendelssohn': 22, 'rachmaninov': 24}, 'chopin': {'bach': 2, 'beethoven': 3, 'chopin': 19, 'grieg': 30, 'haydn': 4, 'liszt': 2, 'mendelssohn': 19, 'rachmaninov': 21}, 'grieg': {'bach': 1, 'beethoven': 7, 'chopin': 12, 'grieg': 15, 'haydn': 7, 'liszt': 5, 'mendelssohn': 28, 'rachmaninov': 25}, 'haydn': {'bach': 1, 'beethoven': 10, 'chopin': 25, 'grieg': 20, 'haydn': 4, 'liszt': 5, 'mendelssohn': 16, 'rachmaninov': 19}, 'liszt': {'bach': 1, 'beethoven': 8, 'chopin': 17, 'grieg': 19, 'haydn': 4, 'liszt': 10, 'mendelssohn': 23, 'rachmaninov': 18}, 'mendelssohn': {'bach': 2, 'beethoven': 11, 'chopin': 20, 'grieg': 20, 'haydn': 4, 'liszt': 8, 'mendelssohn': 18, 'rachmaninov': 17}, 'rachmaninov': {'bach': 3, 'beethoven': 13, 'chopin': 23, 'grieg': 21, 'haydn': 4, 'liszt': 3, 'mendelssohn': 11, 'rachmaninov': 22}}
 
 #iterate over complete test set
 data_list = {
