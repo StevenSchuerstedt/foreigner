@@ -1,3 +1,4 @@
+from copy import deepcopy
 import datasets
 import transformers
 
@@ -32,8 +33,27 @@ eval_dataset = tokenized_datasets["test"]
 
 
 
-# train
-training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=10000, save_steps=1000)
+class CustomCallback(transformers.TrainerCallback):
+    
+    def __init__(self, trainer) -> None:
+        super().__init__()
+        self._trainer = trainer
+    
+    def on_log(self, args, state, control, **kwargs):
+        if control.should_evaluate:
+            control_copy = deepcopy(control)
+            self._trainer.evaluate(eval_dataset=self._trainer.train_dataset, metric_key_prefix="train")
+            return control_copy
+
+
+training_args = transformers.TrainingArguments("checkpoints", num_train_epochs=10000, save_steps=1000, logging_steps=5)
 trainer = transformers.Trainer(
-    model=model, args=training_args, train_dataset=train_dataset, eval_dataset=eval_dataset)
-trainer.train()
+    model=model,                         # the instantiated Transformers model to be trained
+    args=training_args,                  # training arguments, defined above
+    train_dataset=train_dataset,         # training dataset
+    eval_dataset=eval_dataset,          # evaluation dataset
+    #compute_metrics=compute_metrics,     # the callback that computes metrics of interest
+
+)
+trainer.add_callback(CustomCallback(trainer)) 
+train = trainer.train()

@@ -51,6 +51,7 @@ class AttributionHeadBert(nn.Module):
     #return hidden_state
 
     attribution_logits = self.attribution_head(hidden_state)
+    return hidden_state
     return attribution_logits 
   
   def save(self, path, path2):

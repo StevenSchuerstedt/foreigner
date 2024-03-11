@@ -53,6 +53,8 @@ class AttributionHead(nn.Module):
     #return hidden_state
 
     attribution_logits = self.attribution_head(hidden_state)
+    #skip using h mapping layer
+    return hidden_state
     return attribution_logits 
   
   def save(self, path, path2):

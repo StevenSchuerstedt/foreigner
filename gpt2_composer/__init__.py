@@ -4,7 +4,7 @@ import pandas as pd
 
 from .token_generator import *
 from .constants import *
-#from .model import *
+from .model import *
 
 
 def extract_4bar_sections(fn_mid):
